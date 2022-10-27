@@ -1,0 +1,12 @@
+.container {
+  width: 100vw;
+  height: 100vh;
+  /* background-image: url(); */
+  background-image: linear-gradient(
+      to right bottom,
+      rgba(226, 182, 255, 0.8) 40%,
+      rgba(73, 94, 255, 0.6) 60%
+    ),
+    url("../../public//images/bg.jpg");
+  background-size: cover;
+}

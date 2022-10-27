@@ -1,0 +1,66 @@
+.container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  padding-bottom: 8rem;
+  transform: translate(-50%, -50%);
+  background-color: var(--grey-light-1);
+  width: 62rem;
+  max-width: 80vw;
+  border-radius: 1rem;
+}
+
+.container h1 {
+  text-align: center;
+  font-size: 4.5rem;
+  font-weight: 200;
+  color: rgb(223, 6, 42);
+}
+
+.form {
+  width: 100%;
+  padding: 3rem;
+  margin: auto;
+  position: relative;
+}
+
+.input_container {
+  display: flex;
+  flex-direction: column;
+  margin: 1rem 0;
+}
+
+.input_container input {
+  /* width: 48rem; */
+  padding: 0.8rem 0;
+  border: 0;
+  border-bottom: var(--line);
+  font-size: 1.6rem;
+  background-color: transparent;
+}
+
+.input_container input:focus {
+  outline: 0;
+  border-bottom: 2px solid var(--main-color-dark);
+}
+
+.input_container label {
+  opacity: 0;
+  font-size: 1.2rem;
+  font-weight: 500;
+  transition: all 0.3s ease-in;
+}
+
+.input_container input:not(:placeholder-shown) + label {
+  opacity: 1;
+}
+
+.form button {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 2rem;
+}
