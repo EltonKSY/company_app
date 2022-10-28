@@ -1,9 +1,11 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 :root {
   --main-color: #e7c6ff;
   --main-color-dark: #c8b6ff;
   --main-color-light: #ffd6ff;
+  --bright-red: rgb(223, 6, 42);
+  --mid-blue: #495eff;
   --grey-light-1: #faf9f9;
   --grey-light-2: #f4f2f2;
   --grey-light-3: #f0eeee;
@@ -13,7 +15,7 @@
   --grey-dark-3: #999;
   --grey-dark-4: #a7a6a6;
   --shadow-dark: 0 2rem 6rem rgba(0, 0, 0, 0.3);
-  --shadow-light: 0 2rem 5rem rgba(0, 0, 0, 0.06);
+  --shadow-light: 0 2rem 6rem rgba(0, 0, 0, 0.2);
   --line: 2px solid var(--grey-light-4);
   font-size: 62.5%;
 }
@@ -29,14 +31,21 @@
 body {
   font-family: Poppins, sans-serif;
   font-size: 1.6rem;
-  background-color: var(--grey-light-2);
+  background-color: var(--grey-light-3);
   overflow-x: hidden;
 }
 
 /* Defaults */
 
+button {
+  background-color: transparent;
+  border: none;
+}
+
 .btn,
-.btn_inactive {
+.btn_inactive,
+.btn_blue,
+.btn_red {
   color: #fff;
   font-size: 1.6rem;
   border-radius: 4rem;
@@ -44,10 +53,27 @@ body {
   padding: 1rem 3rem;
   border: none;
   cursor: pointer;
-  background-color: rgb(223, 6, 42);
+  margin: 1rem;
+}
+
+.btn_red {
+  background-color: var(--bright-red);
+}
+
+.btn_blue {
+  background-color: var(--mid-blue);
 }
 
 .btn_inactive {
   cursor: none;
   background-color: var(--grey-dark-2);
+}
+
+a {
+  transition: all 0.3s ease-in;
+  text-decoration: none;
+  color: inherit;
+}
+a:hover {
+  text-decoration: underline;
 }
