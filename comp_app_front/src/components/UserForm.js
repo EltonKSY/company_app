@@ -4,6 +4,7 @@ import styles from './Forms.module.css';
 
 function UserForm({ user }) {
   const [disableButton, setDisableButton] = useState(false);
+  const [errMsg, setErrMsg] = useState('');
 
   const date = new Date();
 
@@ -71,6 +72,7 @@ function UserForm({ user }) {
           <br />
           <span className={styles.mini_label}>Active Employee</span>
         </div>
+        {errMsg && <p className="errors">{errMsg}</p>}
         <button className={disableButton ? 'btn_inactive' : 'btn_blue'} type="submit" disabled={disableButton}>
           submit
         </button>

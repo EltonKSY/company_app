@@ -77,3 +77,8 @@ a {
 a:hover {
   text-decoration: underline;
 }
+
+.errors {
+  color: var(--bright-red);
+  font-size: 1.2rem;
+}

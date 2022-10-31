@@ -6,6 +6,7 @@ import styles from './Forms.module.css';
 function AuthForm() {
   const [userName, setUserName] = useState('');
   const [userPassword, setUserPassword] = useState('');
+  const [errMsg, setErrMsg] = useState('');
   const [disableButton, setDisableButton] = useState(true);
 
   //Preliminary check on input/password length in order to enable submit button
@@ -32,8 +33,10 @@ function AuthForm() {
           <input type="password" id="password" placeholder="Password" onChange={e => setUserPassword(e.target.value)} />
           <label htmlFor="password">Password</label>
         </div>
+        {errMsg && <p className="errors">{errMsg}</p>}
+
         <button className={disableButton ? 'btn_inactive' : 'btn_blue'} type="submit" disabled={disableButton}>
-          submit
+          Submit
         </button>
       </form>
     </div>
