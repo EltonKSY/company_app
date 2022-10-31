@@ -1,11 +1,12 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React from 'react';
+import { useState, useEffect } from 'react';
 
-import styles from "./AuthForm.module.css";
+import styles from './Forms.module.css';
 
 function AuthForm() {
-  const [userName, setUserName] = useState("");
-  const [userPassword, setUserPassword] = useState("");
+  const [userName, setUserName] = useState('');
+  const [userPassword, setUserPassword] = useState('');
+  const [errMsg, setErrMsg] = useState('');
   const [disableButton, setDisableButton] = useState(true);
 
   //Preliminary check on input/password length in order to enable submit button
@@ -22,36 +23,22 @@ function AuthForm() {
 
   return (
     <div className={styles.container}>
-      {/* <div>Logo</div> */}
       <form className={styles.form} onSubmit={submitHandler}>
         <h1>Sign in</h1>
         <div className={styles.input_container}>
-          <input
-            type="text"
-            id="user_name"
-            placeholder="User name"
-            onChange={(e) => setUserName(e.target.value)}
-          />
+          <input type="text" id="user_name" placeholder="User name" onChange={e => setUserName(e.target.value)} />
           <label htmlFor="user_name">User name</label>
         </div>
         <div className={styles.input_container}>
-          <input
-            type="password"
-            id="password"
-            placeholder="Password"
-            onChange={(e) => setUserPassword(e.target.value)}
-          />
+          <input type="password" id="password" placeholder="Password" onChange={e => setUserPassword(e.target.value)} />
           <label htmlFor="password">Password</label>
         </div>
-        <button
-          className={disableButton ? "btn_inactive" : "btn"}
-          type="submit"
-          disabled={disableButton}
-        >
-          submit
+        {errMsg && <p className="errors">{errMsg}</p>}
+
+        <button className={disableButton ? 'btn_inactive' : 'btn_blue'} type="submit" disabled={disableButton}>
+          Submit
         </button>
       </form>
-      {/* <div>Bottom</div> */}
     </div>
   );
 }

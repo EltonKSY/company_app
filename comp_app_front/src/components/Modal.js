@@ -1,0 +1,22 @@
+import React from 'react';
+
+import ReactDOM from 'react-dom';
+
+import classes from './Modal.module.css';
+
+//The dark overlay that covers the screen
+//onClick should normally be a function that unmounts Modal
+const BackDrop = props => <div className={classes.backdrop} onClick={props.onConfirm} />;
+
+const Overlay = props => <div className={classes.overlay}>{props.component}</div>;
+
+function Modal(props) {
+  return (
+    <>
+      {ReactDOM.createPortal(<BackDrop onConfirm={props.onConfirm} />, document.getElementById('root-modal'))}
+      {ReactDOM.createPortal(<Overlay component={props.component} />, document.getElementById('root-overlay'))}
+    </>
+  );
+}
+
+export default Modal;
