@@ -42,9 +42,13 @@ function InfoTile({ fname, lname, dob, email, skill, age, uid, isActive, editUse
         </span>
         <span className={styles.second_span}>{dob || ''}</span>
       </div>
-      <a href="mailto:email@email.com" target="_blank" rel="noreferrer" className={styles.mid}>
-        <p className="mid_text">{email || <b>Email</b>}</p>
-      </a>
+      {email ? (
+        <a href="mailto:email@email.com" target="_blank" rel="noreferrer" className={styles.mid}>
+          <p className="mid_text"> </p>
+        </a>
+      ) : (
+        <b>Email</b>
+      )}
       <div className={styles.spans}>
         <span className={styles.main_span}>{skill?.length ? skill[0] : <b>Skills</b>}</span>
         <span className={styles.second_span}>{skill?.length ? skill[1] : ''}</span>

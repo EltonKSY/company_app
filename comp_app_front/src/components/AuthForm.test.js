@@ -3,71 +3,42 @@ import '@testing-library/jest-dom';
 
 import AuthPage from '../pages/AuthPage';
 
-const authFormChecker = () => {
-  render(<AuthPage />);
+//Callbacks
+const inputsChecker = (userValue, pwValue, pwEl, userEl, pEl, btnEl) => {
+  fireEvent.change(pwEl, { target: { value: pwValue } });
+  fireEvent.change(userEl, { target: { value: userValue } });
 
-  const loginFormElement = screen.getByText(/sign in/i);
-  expect(loginFormElement).toBeInTheDocument();
+  //ensure error message is not causing a disabbled !pEl
+  if (userValue?.length > 4 && pwValue?.length > 4 && !pEl) expect(btnEl).not.toBeDisabled();
+  else expect(btnEl).toBeDisabled();
 };
 
-const emptyInputChecker = placeHolder => {
-  render(<AuthPage />);
+const errorMsgChecker = (pwEl, userEl, pEl, btnEl) => {
+  //ensure disabled is not coming from inputs that are too short
+  fireEvent.change(pwEl, { target: { value: 'Password' } });
+  fireEvent.change(userEl, { target: { value: 'UserName' } });
 
-  const inputUserElement = screen.getByPlaceholderText(new RegExp(placeHolder, 'i'));
-  expect(inputUserElement.value).toBe('');
+  if (pEl) expect(btnEl).toBeDisabled();
 };
-
-const disabledButtonChecker = () => {
-  render(<AuthPage />);
-
-  const buttonElement = screen.getByRole('button', { name: new RegExp('submit', 'i') });
-  expect(buttonElement).toBeDisabled();
-};
-
-const inputsChecker = (userValue, pwValue) => {
-  const { container } = render(<AuthPage />);
-
-  const userNameInputElement = screen.getByPlaceholderText(/User name/i);
-  const passwordInputElement = screen.getByPlaceholderText(/Password/i);
-  const buttonElement = screen.getByRole('button', { name: new RegExp('submit', 'i') });
-  const paragraphElement = container.querySelector('.errors');
-
-  fireEvent.change(passwordInputElement, { target: { value: pwValue } });
-  fireEvent.change(userNameInputElement, { target: { value: userValue } });
-
-  if (userValue.length > 4 && pwValue.length > 4 && !paragraphElement) expect(buttonElement).not.toBeDisabled();
-  else expect(buttonElement).toBeDisabled();
-};
-
-const errorMsgChecker = () => {
-  const { container } = render(<AuthPage />);
-
-  //Adding Valid inputs for username and password to prevent false positives
-  //when button is disabled only because the inputs were too short
-  const userNameInputElement = screen.getByPlaceholderText(/User name/i);
-  const passwordInputElement = screen.getByPlaceholderText(/Password/i);
-  const buttonElement = screen.getByRole('button', { name: new RegExp('submit', 'i') });
-  const paragraphElement = container.querySelector('.errors');
-
-  fireEvent.change(passwordInputElement, { target: { value: 'Password' } });
-  fireEvent.change(userNameInputElement, { target: { value: 'UserName' } });
-
-  if (paragraphElement) expect(buttonElement).toBeDisabled();
-};
-
-describe('AuthForm component on initial render', () => {
-  test('Sign in form displays when the Authpage is rendered', authFormChecker);
-  test('username is  empty', () => emptyInputChecker('User name'));
-  test('Password is empty', () => emptyInputChecker('Password'));
-  test('Submit button  is disabled', disabledButtonChecker);
-});
 
 describe('Button is enabled or disabled based on both inputs lengths', () => {
-  test('Submit button is enabled with long inputs', () => inputsChecker('UserName123', 'Password123'));
-  test('Submit button is not enabled with short inputs', () => inputsChecker('User', 'Pass'));
-  test('Submit button is not enabled with short userName and Long password', () => inputsChecker('User', 'Password'));
-  test('Submit button is not enabled with long userName and short password', () => inputsChecker('Username', 'Pass'));
-  test('Submit button is not enabled with empty', () => inputsChecker('', ''));
-});
+  let container, elements;
 
-test('Submit Button is enabled or disabled whether there is an error message ', errorMsgChecker);
+  beforeEach(() => {
+    ({ container } = render(<AuthPage />));
+
+    const userNameInputElement = screen.getByPlaceholderText(/User name/i);
+    const passwordInputElement = screen.getByPlaceholderText(/Password/i);
+    const buttonElement = screen.getByRole('button', { name: new RegExp('submit', 'i') });
+    const paragraphElement = container.querySelector('.errors');
+
+    elements = [passwordInputElement, userNameInputElement, paragraphElement, buttonElement];
+  });
+
+  test('If submit button is enabled with long inputs', () => inputsChecker('userName', 'Password', ...elements));
+  test('If submit button is not enabled with short inputs', () => inputsChecker('User', 'Pass', ...elements));
+  test('If submit button is not enabled with short userName and Long password', () => inputsChecker('User', 'Password', ...elements));
+  test('If submit button is not enabled with long userName and short password', () => inputsChecker('Username', 'Pass', ...elements));
+  test('If submit button is not enabled with empty', () => inputsChecker('', '', ...elements));
+  test('If submit Button is enabled or disabled whether there is an error message ', () => errorMsgChecker(...elements));
+});
