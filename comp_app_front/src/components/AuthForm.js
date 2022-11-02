@@ -33,9 +33,11 @@ function AuthForm() {
           <input type="password" id="password" placeholder="Password" onChange={e => setUserPassword(e.target.value)} />
           <label htmlFor="password">Password</label>
         </div>
+
+        {/* Note:className "errors" tied to unit test */}
         {errMsg && <p className="errors">{errMsg}</p>}
 
-        <button className={disableButton ? 'btn_inactive' : 'btn_blue'} type="submit" disabled={disableButton}>
+        <button className={disableButton ? 'btn_inactive' : 'btn_blue'} type="submit" disabled={disableButton || errMsg}>
           Submit
         </button>
       </form>

@@ -78,6 +78,10 @@ a:hover {
   text-decoration: underline;
 }
 
+ul {
+  list-style: none;
+}
+
 .errors {
   color: var(--bright-red);
   font-size: 1.2rem;

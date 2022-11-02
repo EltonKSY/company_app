@@ -3,17 +3,22 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 import Modal from './Modal';
+import UserForm from './UserForm';
 
 import styles from './InfoTile.module.css';
 
 function DeleteUser({ fname, closeModal }) {
   return (
     <div className={styles.del_container}>
+      <h1>Delete User</h1>
+      <br />
       <p>{`Are you sure you would like to permanently delete ${fname}?`} </p>
       <br />
       <div className={styles.del_btns}>
-        <button className="btn_red">Delete</button>
-        <button className="btn_blue" onClick={closeModal}>
+        <button aria-label="delete" className="btn_red">
+          Delete
+        </button>
+        <button aria-label="delete" className="btn_blue" onClick={closeModal}>
           Cancel
         </button>
       </div>
@@ -21,20 +26,16 @@ function DeleteUser({ fname, closeModal }) {
   );
 }
 
-function InfoTile({ fname, lname, dob, email, skill, age, uid, isActive, editUser }) {
-  const [displayModal, setDisplayModal] = useState(false);
+function InfoTile({ fname, lname, dob, email, password, skill, age, uid, isActive }) {
+  //0=> no display, 1=>display edit, 2=> display delete
+  const [displayModal, setDisplayModal] = useState(0);
 
-  function editInfo() {
-    editUser({ fname, lname, dob, email, skill, age, uid, isActive });
-  }
-
-  function deleteInfo() {
-    setDisplayModal(true);
-    return;
-  }
   return (
     <>
-      {displayModal && <Modal component={<DeleteUser fname={fname} closeModal={() => setDisplayModal(false)} />} onConfirm={() => setDisplayModal(false)} />}
+      {displayModal === 1 && (
+        <Modal component={<UserForm user={{ fname, lname, dob, email, password, skill, age, uid, isActive }} />} onConfirm={() => setDisplayModal(0)} />
+      )}
+      {displayModal === 2 && <Modal component={<DeleteUser fname={fname} closeModal={() => setDisplayModal(0)} />} onConfirm={() => setDisplayModal(0)} />}
 
       <div className={styles.main_info}>
         <span className={styles.main_span}>
@@ -42,9 +43,13 @@ function InfoTile({ fname, lname, dob, email, skill, age, uid, isActive, editUse
         </span>
         <span className={styles.second_span}>{dob || ''}</span>
       </div>
-      <a href="mailto:email@email.com" target="_blank" rel="noreferrer" className={styles.mid}>
-        <p className="mid_text">{email || <b>Email</b>}</p>
-      </a>
+      {email ? (
+        <a href="mailto:email@email.com" target="_blank" rel="noreferrer" className={styles.mid}>
+          <p className="mid_text">{email}</p>
+        </a>
+      ) : (
+        <b>Email</b>
+      )}
       <div className={styles.spans}>
         <span className={styles.main_span}>{skill?.length ? skill[0] : <b>Skills</b>}</span>
         <span className={styles.second_span}>{skill?.length ? skill[1] : ''}</span>
@@ -54,11 +59,11 @@ function InfoTile({ fname, lname, dob, email, skill, age, uid, isActive, editUse
       </span>
       {fname ? (
         <div className={styles.icons}>
-          <button onClick={editInfo}>
+          <button aria-label="edit" onClick={() => setDisplayModal(1)}>
             <FontAwesomeIcon icon={faPencil} />
           </button>
-          <button>
-            <FontAwesomeIcon icon={faTrash} onClick={deleteInfo} />
+          <button aria-label="delete" onClick={() => setDisplayModal(2)}>
+            <FontAwesomeIcon icon={faTrash} />
           </button>
         </div>
       ) : (
