@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { padTo2Digits, validateEmail } from '../helpers/validators';
 
 import styles from './Forms.module.css';
 
@@ -12,15 +13,13 @@ function UserForm({ user }) {
   const [errMsg, setErrMsg] = useState('');
   const [disableButton, setDisableButton] = useState(true);
 
+  //Min & Max Date for date input, assuming the oldest employee to be 110
   const currDate = new Date();
-
-  const padTo2Digits = num => num.toString().padStart(2, '0');
-
   const year = currDate.getFullYear();
   const month = padTo2Digits(currDate.getMonth() + 1);
   const day = padTo2Digits(currDate.getDate());
-
-  const formattedDate = [year, month, day].join('-');
+  const maxDate = [year, month, day].join('-');
+  const minDate = [year - 110, month, day].join('-');
 
   const submitHandler = function (e) {
     e.preventDefault();
@@ -28,11 +27,9 @@ function UserForm({ user }) {
     return;
   };
 
-  const validateEmail = email => /\S+@\S+\.\S+/.test(email);
-
   //Preliminary check on inputs validation in order to enable submit button
   useEffect(() => {
-    if (fname && lname && password?.length > 4 && validateEmail(email)) setDisableButton(false);
+    if (fname && lname && password?.length > 4 && validateEmail(email) && date1) setDisableButton(false);
     else setDisableButton(true);
   }, [fname, lname, email, password, date1, isActive]);
 
@@ -68,8 +65,8 @@ function UserForm({ user }) {
           <input
             type="date"
             id="date"
-            min="2018-01-01"
-            max={formattedDate}
+            min={minDate}
+            max={maxDate}
             required
             placeholder="Date of birth"
             defaultValue={date1}
