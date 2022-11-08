@@ -77,6 +77,35 @@ const mockDataInActive = [
     isActive: true,
   },
 ];
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+const getEmployees = () => {
+  fetch('http://localhost:3001/Employees', {
+    headers: {
+      'Content-Type': 'application / json',
+      Authorization: getCookie('comp_app_JWT'),
+    },
+  })
+    .then(res => {
+      if (res.ok) {
+        return res.json();
+      } else throw new Error('Something went wrong');
+    })
+    .then(res => {
+      console.log(res);
+    })
+    .catch(error => {
+      console.log(error);
+    });
+};
+console.log();
+getEmployees();
+
 function App() {
   return (
     <BrowserRouter>
