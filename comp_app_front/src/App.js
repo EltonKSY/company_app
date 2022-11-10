@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useContext } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import AuthPage from './pages/AuthPage';
 import ListingPage from './pages/ListingPage';
 
 import './App.css';
+import { FullContext } from './components/FullContext';
 const mockDataActive = [
   {
     fname: 'User1',
@@ -84,8 +85,8 @@ function getCookie(name) {
   if (parts.length === 2) return parts.pop().split(';').shift();
 }
 
-const getEmployees = () => {
-  fetch('http://localhost:3001/Employees', {
+const getEmployees = async () => {
+  const emps = await fetch('http://localhost:3001/Employees', {
     headers: {
       'Content-Type': 'application / json',
       Authorization: getCookie('comp_app_JWT'),
@@ -97,21 +98,24 @@ const getEmployees = () => {
       } else throw new Error('Something went wrong');
     })
     .then(res => {
-      console.log(res);
+      return res.result;
     })
     .catch(error => {
       console.log(error);
     });
+  return emps;
 };
-console.log();
-getEmployees();
 
 function App() {
+  const ctx = useContext(FullContext);
+  useEffect(() => {
+    getEmployees().then(emps => ctx.dispatch({ type: 'ALL_USERS', payload: emps }));
+  }, [ctx.user]);
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
-        <Route path="/listing" element={<ListingPage activeEmps={mockDataActive} inactiveEmps={mockDataInActive} />} />
+        <Route path="/listing" element={<ListingPage />} />
         <Route path="*" element={<AuthPage />} />
       </Routes>
     </BrowserRouter>

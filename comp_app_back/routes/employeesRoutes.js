@@ -1,12 +1,18 @@
 const express = require('express');
 const employeeController = require('./../controllers/employeeController');
+const authController = require('./../controllers/authController');
 
 const router = express.Router();
 
 //GET and POST reqs on /Employees endpoint
-router.route('/').get(employeeController.getEmployees).post(employeeController.addEmployee);
+router.route('/').get(authController.protect, employeeController.getEmployees).post(authController.protect, employeeController.addEmployee);
 
 //GET PATCH and DELETE reqs on /Employees/{id} endpoint
-router.route('/:id').get(employeeController.getEmployee).patch(employeeController.updateEmployee).delete(employeeController.deleteEmployee);
+//protect prevents acces to non-logged in users
+router
+  .route('/:id')
+  .get(authController.protect, employeeController.getEmployee)
+  .patch(authController.protect, employeeController.updateEmployee)
+  .delete(authController.protect, employeeController.deleteEmployee);
 
 module.exports = router;

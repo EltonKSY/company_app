@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
+import { FullContext } from '../components/FullContext';
 import InfoTile from '../components/InfoTile';
 import Modal from '../components/Modal';
 import UserForm from '../components/UserForm';
@@ -9,6 +10,8 @@ import UserForm from '../components/UserForm';
 import styles from './ListingPage.module.css';
 
 function ListingPage({ activeEmps, inactiveEmps, currUser }) {
+  const ctx = useContext(FullContext);
+
   const [displayModal, setDisplayModal] = useState(false);
   const [cat, setCat] = useState('ALL');
 
@@ -27,13 +30,13 @@ function ListingPage({ activeEmps, inactiveEmps, currUser }) {
         </header>
         <div className={styles.buttons}>
           <button className={`${styles.category} ${cat === 'ALL' && styles.category_current}`} onClick={() => setCat('ALL')}>
-            <span>{activeEmps?.length + inactiveEmps?.length}</span>All Employees
+            <span>{activeEmps?.length + inactiveEmps?.length || 0}</span>All Employees
           </button>
           <button className={`${styles.category} ${cat === 'ACTIVE' && styles.category_current}`} onClick={() => setCat('ACTIVE')}>
-            <span>{activeEmps?.length}</span> Active Employees
+            <span>{activeEmps?.length || 0}</span> Active Employees
           </button>
           <button className={`${styles.category} ${cat === 'INACTIVE' && styles.category_current}`} onClick={() => setCat('INACTIVE')}>
-            <span>{inactiveEmps?.length}</span> Inactive Employees
+            <span>{inactiveEmps?.length || 0}</span> Inactive Employees
           </button>
         </div>
 

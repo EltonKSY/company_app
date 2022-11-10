@@ -1,9 +1,9 @@
 const express = require('express');
-const employeeController = require('./../controllers/employeeController');
+const authController = require('./../controllers/authController');
 
 const router = express.Router();
 
 //POST is the only req on /Authenticate endpoint
-router.route('/').post(employeeController.authEmployee);
+router.route('/').post(authController.authEmployee);
 
 module.exports = router;
