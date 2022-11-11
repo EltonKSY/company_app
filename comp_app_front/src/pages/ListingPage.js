@@ -1,6 +1,7 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { useGetRows } from '../hooks/useGetRows';
 
 import { FullContext } from '../components/FullContext';
 import InfoTile from '../components/InfoTile';
@@ -11,6 +12,7 @@ import styles from './ListingPage.module.css';
 
 function ListingPage({ activeEmps, inactiveEmps, currUser }) {
   const ctx = useContext(FullContext);
+  const { rows, error, isLoading } = useGetRows('');
 
   const [displayModal, setDisplayModal] = useState(false);
   const [cat, setCat] = useState('ALL');
@@ -25,7 +27,9 @@ function ListingPage({ activeEmps, inactiveEmps, currUser }) {
       {displayModal && <Modal component={<UserForm />} onConfirm={() => setDisplayModal(false)} />}
       <div className={styles.container}>
         <header className={styles.header}>
-          <p>{`Welcome back, ${currUser}!`}</p>
+          <p>
+            Welcome back, <b>{`${ctx?.user?.f_name}`}</b>!
+          </p>
           <button className="btn_red">Logout</button>
         </header>
         <div className={styles.buttons}>
@@ -46,17 +50,15 @@ function ListingPage({ activeEmps, inactiveEmps, currUser }) {
         <div className={styles.table}>
           <InfoTile />
           {cat !== 'INACTIVE' &&
-            activeEmps?.map(user => (
+            rows?.map(user => (
               <InfoTile
-                key={user.id}
-                uid={user.id}
-                fname={user.fname}
-                lname={user.lname}
-                dob={user.dob}
+                key={user.uid}
+                uid={user.uid}
+                fname={user.f_name}
+                lname={user.l_name}
+                dob={user.DOB}
                 email={user.email}
-                skill={user.skill}
-                password={user.password}
-                age={56}
+                skill={['user.skill', 'hkjhkj']}
                 isActive={true}
               />
             ))}

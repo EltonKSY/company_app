@@ -14,7 +14,7 @@ const signToken = id => {
 };
 
 const createSendToken = (user, statusCode, res) => {
-  const token = signToken(user.uid);
+  const token = signToken(user.UID);
   const cookieOptions = {
     expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     httpOnly: true,
@@ -22,14 +22,11 @@ const createSendToken = (user, statusCode, res) => {
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
   res.cookie('jwt', token, cookieOptions);
-
-  res.status(statusCode).json({
+  user.pw = undefined;
+  return res.status(statusCode).json({
     status: 'success',
     token,
-    result: {
-      uid: user.uid,
-      user_name: user.user_name,
-    },
+    result: user,
   });
 };
 
@@ -43,15 +40,16 @@ exports.authEmployee =
     if (!user_name || !password) return next(new appError('Please provide user name and password!', 400));
 
     // 2) Check if user exists && password is correct
-    const q = `SELECT * FROM Users WHERE user_name = "${user_name}"`;
+    const q = `SELECT f_name,  l_name, email, pw, is_active, DOB, Employees.eid AS EID, Employees.uid AS UID FROM Users
+        JOIN Employees ON  Users.uid = Employees.uid
+          WHERE user_name = "${user_name}";`;
 
     connection.query(
       q,
       [],
       catchAsync(async function (err, user) {
         if (!user?.length) return next(new appError('Authentication failed, invalid credentials', 401));
-
-        if (await bcrypt.compare(req?.body?.password, user[0].pw)) createSendToken(...user, 201, res);
+        if (await bcrypt.compare(req?.body?.password, user[0].pw)) createSendToken(user[0], 201, res);
         else return next(new appError('Authentication failed, invalid credentials', 401));
       }),
     );
@@ -59,14 +57,13 @@ exports.authEmployee =
 
 //Prevents access to requests without a valid token
 exports.protect = catchAsync(async (req, res, next) => {
+  console.log('pt');
   // 1) Getting token and check of it's there
   const JWT = req.headers.authorization?.split(' ')[1];
-  //   console.log(JWT);
   if (!JWT) return next(new appError('You are not logged in! Please log in to get access.', 401));
 
   // 2) Decode the token
   const decoded = await promisify(jwt.verify)(JWT, process.env.JWT_SECRET);
-
   // 3) Check if user still exists
   const q = `SELECT * FROM Users WHERE uid = "${decoded.id}"`;
   let user;
