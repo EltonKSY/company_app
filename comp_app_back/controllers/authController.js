@@ -57,7 +57,6 @@ exports.authEmployee =
 
 //Prevents access to requests without a valid token
 exports.protect = catchAsync(async (req, res, next) => {
-  console.log('pt');
   // 1) Getting token and check of it's there
   const JWT = req.headers.authorization?.split(' ')[1];
   if (!JWT) return next(new appError('You are not logged in! Please log in to get access.', 401));

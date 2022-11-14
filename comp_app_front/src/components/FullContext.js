@@ -6,7 +6,6 @@ export const FullContext = createContext();
 export const authReducer = (state, action) => {
   switch (action.type) {
     case 'AUTH_READY':
-      console.log(action.payload);
       return { ...state, user: action.payload, authIsReady: true };
     case 'ALL_USERS':
       return { ...state, users: action.payload };
@@ -17,7 +16,7 @@ export const authReducer = (state, action) => {
 
 export const FullContextProvider = ({ children }) => {
   //Gets
-  const { rows, error, isLoading } = useGetRows('test');
+  const { rows: currUser, error, isLoading } = useGetRows('currUser');
   const [state, dispatch] = useReducer(authReducer, {
     user: null,
     authIsReady: false,
@@ -26,8 +25,8 @@ export const FullContextProvider = ({ children }) => {
 
   useEffect(() => {
     //If there exists a JWT, check if it is still valid and log the user in
-    !isLoading && !error && dispatch({ type: 'AUTH_READY', payload: rows });
-  }, [rows, isLoading, error]);
+    !isLoading && !error && dispatch({ type: 'AUTH_READY', payload: currUser });
+  }, [currUser, isLoading, error]);
 
   return <FullContext.Provider value={{ ...state, dispatch }}>{children}</FullContext.Provider>;
 };

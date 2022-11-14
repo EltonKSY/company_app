@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import AuthPage from './pages/AuthPage';
@@ -12,7 +12,6 @@ function App() {
 
   return (
     <>
-      {/* {ctx.authIsReady && ( */}
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={ctx.user ? <ListingPage /> : <AuthPage />} />
@@ -21,7 +20,6 @@ function App() {
           <Route path="*" element={<AuthPage />} />
         </Routes>
       </BrowserRouter>
-      {/* )} */}
     </>
   );
 }

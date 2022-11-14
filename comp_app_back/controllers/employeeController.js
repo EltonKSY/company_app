@@ -32,7 +32,7 @@ async function ownUser(req) {
 }
 //Get  employee if JWT is valid and id is valid
 exports.getEmployee = catchAsync(async (req, res, next) => {
-  const eid = req.params?.id === 'test' ? await ownUser(req) : req.params?.id;
+  const eid = req.params?.id === 'currUser' ? await ownUser(req) : req.params?.id;
 
   const q = `SELECT f_name,  l_name, email, is_active, DOB, Employees.eid AS EID, Employees.uid UID
   FROM Users
