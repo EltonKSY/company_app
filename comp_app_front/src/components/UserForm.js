@@ -32,7 +32,7 @@ function UserForm({ user }) {
     if (fname && lname && password?.length > 4 && validateEmail(email) && date1) setDisableButton(false);
     else setDisableButton(true);
   }, [fname, lname, email, password, date1, isActive]);
-
+  console.log(user);
   return (
     <div className={styles.container}>
       <form className={styles.form} onSubmit={submitHandler}>

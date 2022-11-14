@@ -41,11 +41,11 @@ function InfoTile({ fname, lname, dob, email, password, skill, age, uid, isActiv
         <span className={styles.main_span}>
           <b>{fname ? fname + ' ' + lname : 'Full Name'}</b>
         </span>
-        <span className={styles.second_span}>{dob || ''}</span>
+        <span className={styles.second_span}>{dob ? new Date(dob).toLocaleDateString('en-US').replaceAll('/', '-') : ''}</span>
       </div>
       {email ? (
         <a href="mailto:email@email.com" target="_blank" rel="noreferrer" className={styles.mid}>
-          <p className="mid_text">{email}</p>
+          <p className={styles.mid_text}>{email}</p>
         </a>
       ) : (
         <b>Email</b>

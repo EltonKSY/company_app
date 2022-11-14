@@ -8,6 +8,10 @@
   overflow-x: hidden;
 }
 
+.mid_text {
+  overflow-wrap: break-word;
+}
+
 .spans {
   display: flex;
   flex-direction: column;
