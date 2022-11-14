@@ -56,7 +56,6 @@ exports.getEmployee = catchAsync(async (req, res, next) => {
 
   connection.query(q, [], function (err, result) {
     if (err) return next(new appError(err.code, 404));
-
     return res.status(200).json({
       status: 'success',
       result: result[0],
@@ -81,9 +80,32 @@ exports.updateEmployee = catchAsync(async (req, res) => {
 });
 
 //Delete employee if JWT is valid
-exports.deleteEmployee = catchAsync(async (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
+exports.deleteEmployee = catchAsync(async (req, res, next) => {
+  const uid = req.params?.id;
+  const eid = req.body?.uid;
+
+  const qUser = `DELETE FROM Users WHERE uid='${uid}';`;
+  const qEmp = `DELETE FROM Employees WHERE eid='${eid}';`;
+  const qEmpSkills = `DELETE FROM EmployeesSkills WHERE eid='${eid}';`;
+  const qSIDs = `SELECT sid FROM Skills WHERE sid IN (SELECT sid FROM EmployeesSkills WHERE eid ="${eid}");`;
+
+  connection.query(qUser, [], (err, result) => err && next(new appError('Failed to delete User', 404)));
+  connection.query(qEmp, [], (err, result) => err && next(new appError('Failed to delete Employee', 404)));
+
+  connection.query(qSIDs, [], (err, result) => {
+    if (err) return next(new appError('Failed to delete SIDs', 404));
+    result.forEach(sidOBj => {
+      connection.query(`DELETE FROM Skills WHERE sid='${sidOBj.sid}';`, [], (err, result) => {
+        if (err) return next(new appError('Failed to delete Skill', 404));
+      });
+    });
+    connection.query(qEmpSkills, [], (err, result) => {
+      if (err) return next(new appError('Failed to delete Employee Skills', 404));
+      console.log(result);
+    });
+  });
+
+  return res.status(200).json({
+    status: 'success',
   });
 });
