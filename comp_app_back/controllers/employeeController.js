@@ -10,10 +10,19 @@ const appError = require('./../helpers/appErrors');
 
 //Get all employees
 exports.getEmployees = catchAsync(async (req, res, next) => {
-  const q = 'SELECT * FROM Employees';
+  const q = `
+  SELECT
+    f_name, l_name, email, DOB, is_active, Employees.uid AS UID, 
+    EmployeesSkills.eid AS EID,
+    CONCAT("[",GROUP_CONCAT(CONCAT("""", skill_name, """" )), "]") AS skills, 
+    CONCAT("[",GROUP_CONCAT(CONCAT("""", lvl, """" )), "]") AS levels
+    FROM Employees
+      JOIN EmployeesSkills ON Employees.eid = EmployeesSkills.eid
+          JOIN Skills ON Skills.sid = EmployeesSkills.sid
+    GROUP BY Employees.eid`;
 
   connection.query(q, [], function (err, result) {
-    if (err) next(new appError(err.code, 404));
+    if (err) return next(new appError(err.code, 404));
     return res.status(200).json({
       status: 'success',
       result,
@@ -32,26 +41,22 @@ async function ownUser(req) {
 }
 //Get  employee if JWT is valid and id is valid
 exports.getEmployee = catchAsync(async (req, res, next) => {
-  const eid = req.params?.id === 'currUser' ? await ownUser(req) : req.params?.id;
+  const uid = req.params?.id === 'currUser' ? await ownUser(req) : req.params?.id;
 
-  const q = `SELECT f_name,  l_name, email, is_active, DOB, Employees.eid AS EID, Employees.uid UID
+  const q = `
+  SELECT f_name,  l_name, email, is_active, DOB, Employees.eid AS EID, Employees.uid UID
   FROM Users
-  JOIN Employees ON 
-      Users.uid =  Employees.uid
-  JOIN EmployeesSkills ON 
-    EmployeesSkills.eid =  Employees.eid
-  JOIN Skills ON 
-    Skills.sid =  EmployeesSkills.sid
-  WHERE Employees.uid = "${eid}";`;
+    JOIN Employees ON 
+        Users.uid =  Employees.uid
+      JOIN EmployeesSkills ON 
+        EmployeesSkills.eid =  Employees.eid
+        JOIN Skills ON 
+          Skills.sid =  EmployeesSkills.sid
+    WHERE Employees.uid = "${uid}";`;
 
   connection.query(q, [], function (err, result) {
     if (err) return next(new appError(err.code, 404));
 
-    // if (!result?.length) return next(new appError('This user does not exist', 404));
-    // result[0].skills = [];
-    // result.forEach(res => {
-    //   result[0].skills.push(res.skill_name);
-    // });
     return res.status(200).json({
       status: 'success',
       result: result[0],

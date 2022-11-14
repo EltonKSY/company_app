@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 
+import { diff_years } from '../helpers/validators';
 import Modal from './Modal';
 import UserForm from './UserForm';
 
@@ -26,14 +27,23 @@ function DeleteUser({ fname, closeModal }) {
   );
 }
 
-function InfoTile({ fname, lname, dob, email, password, skill, age, uid, isActive }) {
+function InfoTile({ user }) {
   //0=> no display, 1=>display edit, 2=> display delete
   const [displayModal, setDisplayModal] = useState(0);
+  const fname = user?.f_name;
+  const lname = user?.l_name;
+  const dob = user?.DOB;
+  const age = diff_years(new Date(), new Date(dob));
+  const email = user?.email;
+  const skills = fname ? JSON.parse(user?.skills) : '';
+  const levels = fname ? JSON.parse(user?.levels) : '';
+  const uid = user?.UID;
+  const isActive = user?.is_active;
 
   return (
     <>
       {displayModal === 1 && (
-        <Modal component={<UserForm user={{ fname, lname, dob, email, password, skill, age, uid, isActive }} />} onConfirm={() => setDisplayModal(0)} />
+        <Modal component={<UserForm user={{ fname, lname, dob, age, email, skills, uid, isActive }} />} onConfirm={() => setDisplayModal(0)} />
       )}
       {displayModal === 2 && <Modal component={<DeleteUser fname={fname} closeModal={() => setDisplayModal(0)} />} onConfirm={() => setDisplayModal(0)} />}
 
@@ -51,12 +61,10 @@ function InfoTile({ fname, lname, dob, email, password, skill, age, uid, isActiv
         <b>Email</b>
       )}
       <div className={styles.spans}>
-        <span className={styles.main_span}>{skill?.length ? skill[0] : <b>Skills</b>}</span>
-        <span className={styles.second_span}>{skill?.length ? skill[1] : ''}</span>
+        <span className={styles.main_span}>{skills?.length ? `${skills[0]},  ${levels[0]}` : <b>Skills</b>}</span>
+        <span className={styles.second_span}>{skills?.length > 1 ? `${skills[1]},  ${levels[1]}` : ''}</span>
       </div>
-      <span className={styles.col_3}>
-        <b>{age || 'Age'}</b>
-      </span>
+      <span className={styles.col_3}>{<b>{age || 'Age'}</b>}</span>
       {fname ? (
         <div className={styles.icons}>
           <button aria-label="edit" onClick={() => setDisplayModal(1)}>
