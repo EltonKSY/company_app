@@ -56,7 +56,6 @@ exports.getEmployee = catchAsync(async (req, res, next) => {
 
   connection.query(q, [], function (err, result) {
     if (err) return next(new appError(err.code, 404));
-    console.log(result);
     return res.status(200).json({
       status: 'success',
       result: result[0],
