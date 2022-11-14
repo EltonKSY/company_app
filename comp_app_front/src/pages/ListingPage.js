@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { useGetRows } from '../hooks/useGetRows';
@@ -10,12 +10,25 @@ import UserForm from '../components/UserForm';
 
 import styles from './ListingPage.module.css';
 
-function ListingPage({ activeEmps, inactiveEmps, currUser }) {
+function ListingPage() {
   const ctx = useContext(FullContext);
-  const { rows, error, isLoading } = useGetRows('');
+  const { rows: employees, error, isLoading } = useGetRows('');
 
   const [displayModal, setDisplayModal] = useState(false);
   const [cat, setCat] = useState('ALL');
+
+  const [activeEmps, setActiveEmps] = useState([]);
+  const [inactiveEmps, setInactiveEmps] = useState([]);
+
+  useEffect(() => {
+    const active = [];
+    const inactive = [];
+
+    employees?.forEach(employee => (employee.is_active ? active.push(employee) : inactive.push(employee)));
+
+    setActiveEmps(active);
+    setInactiveEmps(inactive);
+  }, [employees]);
 
   const addUser = function () {
     setDisplayModal(true);
@@ -37,7 +50,7 @@ function ListingPage({ activeEmps, inactiveEmps, currUser }) {
             <span>{activeEmps?.length + inactiveEmps?.length || 0}</span>All Employees
           </button>
           <button className={`${styles.category} ${cat === 'ACTIVE' && styles.category_current}`} onClick={() => setCat('ACTIVE')}>
-            <span>{activeEmps?.length || 0}</span> Active Employees
+            <span>{employees?.length ? activeEmps.length : 0}</span> Active Employees
           </button>
           <button className={`${styles.category} ${cat === 'INACTIVE' && styles.category_current}`} onClick={() => setCat('INACTIVE')}>
             <span>{inactiveEmps?.length || 0}</span> Inactive Employees
@@ -49,33 +62,8 @@ function ListingPage({ activeEmps, inactiveEmps, currUser }) {
         </button>
         <div className={styles.table}>
           <InfoTile />
-          {cat !== 'INACTIVE' &&
-            rows?.map(user => (
-              <InfoTile
-                key={user.uid}
-                uid={user.uid}
-                fname={user.f_name}
-                lname={user.l_name}
-                dob={user.DOB}
-                email={user.email}
-                skill={['user.skill', 'hkjhkj']}
-                isActive={true}
-              />
-            ))}
-          {cat !== 'ACTIVE' &&
-            inactiveEmps?.map(user => (
-              <InfoTile
-                key={user.id}
-                uid={user.id}
-                fname={user.fname}
-                lname={user.lname}
-                dob={user.dob}
-                email={user.email}
-                skill={user.skill}
-                age={56}
-                isActive={true}
-              />
-            ))}
+          {cat !== 'INACTIVE' && activeEmps?.map(user => <InfoTile key={user.uid} user={user} />)}
+          {cat !== 'ACTIVE' && inactiveEmps?.map(user => <InfoTile key={user.uid} user={user} />)}
         </div>
       </div>
     </>
