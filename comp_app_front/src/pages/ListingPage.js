@@ -61,7 +61,7 @@ function ListingPage() {
           <FontAwesomeIcon icon={faPlus} />
         </button>
         <div className={styles.table}>
-          <InfoTile />
+          <InfoTile key="title-tile" />
           {cat !== 'INACTIVE' && activeEmps?.map(user => <InfoTile key={user.uid} user={user} />)}
           {cat !== 'ACTIVE' && inactiveEmps?.map(user => <InfoTile key={user.uid} user={user} />)}
         </div>
