@@ -2,13 +2,40 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 
-import { diff_years } from '../helpers/validators';
+import { diff_years, getCookie } from '../helpers/validators';
+
 import Modal from './Modal';
 import UserForm from './UserForm';
 
 import styles from './InfoTile.module.css';
 
-function DeleteUser({ fname, closeModal }) {
+function DeleteUser({ fname, UID, EID, closeModal }) {
+  const deleteHandler = async function () {
+    const cookie = getCookie('comp_app_JWT');
+    if (!getCookie('comp_app_JWT')) return;
+
+    fetch(`http://localhost:3001/Employees/${UID}`, {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: cookie,
+      },
+      body: JSON.stringify({
+        test: 'test',
+        eid: EID,
+      }),
+    })
+      .then(res => {
+        if (res.ok) {
+          closeModal();
+        } else {
+          throw new Error('Something went wrong, Request Failed!');
+        }
+      })
+      .catch(error => console.log(error));
+  };
+
   return (
     <div className={styles.del_container}>
       <h1>Delete User</h1>
@@ -16,7 +43,7 @@ function DeleteUser({ fname, closeModal }) {
       <p>{`Are you sure you would like to permanently delete ${fname}?`} </p>
       <br />
       <div className={styles.del_btns}>
-        <button aria-label="delete" className="btn_red">
+        <button aria-label="delete" className="btn_red" onClick={deleteHandler}>
           Delete
         </button>
         <button aria-label="delete" className="btn_blue" onClick={closeModal}>
@@ -30,6 +57,8 @@ function DeleteUser({ fname, closeModal }) {
 function InfoTile({ user }) {
   //0=> no display, 1=>display edit, 2=> display delete
   const [displayModal, setDisplayModal] = useState(0);
+  const UID = user?.UID;
+  const EID = user?.EID;
   const fname = user?.f_name;
   const lname = user?.l_name;
   const dob = user?.DOB;
@@ -45,7 +74,9 @@ function InfoTile({ user }) {
       {displayModal === 1 && (
         <Modal component={<UserForm user={{ fname, lname, dob, age, email, skills, uid, isActive }} />} onConfirm={() => setDisplayModal(0)} />
       )}
-      {displayModal === 2 && <Modal component={<DeleteUser fname={fname} closeModal={() => setDisplayModal(0)} />} onConfirm={() => setDisplayModal(0)} />}
+      {displayModal === 2 && (
+        <Modal component={<DeleteUser fname={fname} UID={UID} EID={EID} closeModal={() => setDisplayModal(0)} />} onConfirm={() => setDisplayModal(0)} />
+      )}
 
       <div className={styles.main_info}>
         <span className={styles.main_span}>
