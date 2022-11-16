@@ -9,7 +9,7 @@ export const useGetRows = path => {
   useEffect(() => {
     (async () => {
       const cookie = getCookie('comp_app_JWT');
-      console.log(cookie);
+
       if (!getCookie('comp_app_JWT')) return setRows(null);
       const allRows = await fetch(`http://localhost:3001/Employees/${path || ''}`, {
         headers: {

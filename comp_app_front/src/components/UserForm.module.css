@@ -1,0 +1,77 @@
+.form_modal {
+  min-height: 60rem;
+}
+.skills_container {
+  justify-content: center;
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  grid-row-gap: 10px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+select {
+  padding: 1.2rem;
+  margin: 0rem 1rem 0 0;
+  border: 1px solid var(--grey-light-4);
+  border-radius: 5px;
+}
+
+.trash {
+  justify-self: flex-end;
+}
+
+.button_add {
+  position: relative !important;
+  height: 5rem;
+  width: 5rem;
+  border-radius: 50%;
+  background-color: var(--mid-blue);
+}
+
+.buttons {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.button_add {
+  margin: auto;
+}
+
+.button_next {
+  color: var(--mid-blue);
+  font-size: 3rem;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 1rem;
+}
+
+.button_prev {
+  color: var(--mid-blue);
+  font-size: 3rem;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 1rem !important;
+}
+
+.button_add_container {
+  width: 5rem;
+  margin: 0 auto 2rem auto;
+}
+
+.bottom {
+  width: 100%;
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translate(-50%);
+  text-align: center;
+}
+
+.view_1 {
+  margin-bottom: 7rem;
+}

@@ -37,7 +37,7 @@ function ListingPage() {
 
   return (
     <>
-      {displayModal && <Modal component={<UserForm />} onConfirm={() => setDisplayModal(false)} />}
+      {displayModal && <Modal component={<UserForm onConfirm={() => setDisplayModal(false)} />} onConfirm={() => setDisplayModal(false)} />}
       <div className={styles.container}>
         <header className={styles.header}>
           <p>

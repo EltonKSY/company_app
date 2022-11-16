@@ -1,7 +1,11 @@
+const { faker } = require('@faker-js/faker');
 const connection = require('../database/companyDB');
 const jwt = require('jsonwebtoken');
-
 const { promisify } = require('util');
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+
+const dateFormatter = require('../helpers/utilityFunctions').toSQLDate;
 
 const catchAsync = require('./../helpers/catchAsync');
 const appError = require('./../helpers/appErrors');
@@ -22,7 +26,7 @@ exports.getEmployees = catchAsync(async (req, res, next) => {
     GROUP BY Employees.eid`;
 
   connection.query(q, [], function (err, result) {
-    if (err) return next(new appError(err.code, 404));
+    if (err) next(new appError(err.code, 404));
     return res.status(200).json({
       status: 'success',
       result,
@@ -33,7 +37,7 @@ async function ownUser(req) {
   // 1) Getting token and check of it's there
   const JWT = req.headers.authorization?.split(' ')[1];
   //   console.log(JWT);
-  if (!JWT) return next(new appError('You are not logged in! Please log in to get access.', 401));
+  if (!JWT) next(new appError('You are not logged in! Please log in to get access.', 401));
 
   // 2) Decode the token
   const decoded = await promisify(jwt.verify)(JWT, process.env.JWT_SECRET);
@@ -42,7 +46,6 @@ async function ownUser(req) {
 //Get  employee if JWT is valid and id is valid
 exports.getEmployee = catchAsync(async (req, res, next) => {
   const uid = req.params?.id === 'currUser' ? await ownUser(req) : req.params?.id;
-
   const q = `
   SELECT f_name,  l_name, email, is_active, DOB, Employees.eid AS EID, Employees.uid UID
   FROM Users
@@ -55,19 +58,55 @@ exports.getEmployee = catchAsync(async (req, res, next) => {
     WHERE Employees.uid = "${uid}";`;
 
   connection.query(q, [], function (err, result) {
-    if (err) return next(new appError(err.code, 404));
-    return res.status(200).json({
-      status: 'success',
-      result: result[0],
-    });
+    if (err) next(new appError(err.code, 404));
+    else
+      return res.status(200).json({
+        status: 'success',
+        result: result[0] || null,
+      });
   });
 });
 
 //Add employee if JWT is valid
 exports.addEmployee = catchAsync(async (req, res) => {
-  return res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
+  const GUIDUser = crypto.randomUUID();
+  const GUIDEmp = crypto.randomUUID();
+  const { fname, lname, email, DOB, PW, isActive, skills } = req.body;
+  const userName = faker.internet.userName(lname);
+  const hashedPassword = await bcrypt.hash(PW, 10);
+
+  const q = 'INSERT INTO Users (uid, user_name, pw) VALUES ?';
+  const q2 = 'INSERT INTO Employees (eid, uid, f_name, l_name, DOB, email, is_active) VALUES ?';
+  const q3 = 'INSERT INTO Skills (sid, lvl, skill_name) VALUES ?';
+  const q4 = 'INSERT INTO EmployeesSkills (id, eid, sid) VALUES ?';
+
+  connection.query(q, [[[GUIDUser, userName, hashedPassword]]], function (err, result) {
+    if (err) next(new appError('Could not create user', 404));
+  });
+
+  connection.query(q2, [[[GUIDEmp, GUIDUser, fname, lname, dateFormatter(new Date(DOB)), email, isActive]]], function (err, result) {
+    if (err) next(new appError('Could not create Employee', 404));
+  });
+
+  const skillsData = [];
+  const employeeSkillsData = [];
+
+  skills.forEach(skill => {
+    const GUIDSkill = crypto.randomUUID();
+    skillsData.push([GUIDSkill, skill.level, skill.name]);
+    employeeSkillsData.push([null, GUIDEmp, GUIDSkill]);
+  });
+
+  connection.query(q3, [skillsData], function (err, result) {
+    if (err) next(new appError('Could not add skills', 404));
+  });
+  connection.query(q4, [employeeSkillsData], function (err, result) {
+    if (err) next(new appError('Could not create skills and data', 404));
+  });
+
+  return res.status(200).json({
+    status: 'success',
+    result: { UID: GUIDUser, userName },
   });
 });
 
@@ -81,27 +120,26 @@ exports.updateEmployee = catchAsync(async (req, res) => {
 
 //Delete employee if JWT is valid
 exports.deleteEmployee = catchAsync(async (req, res, next) => {
-  console.log();
   const uid = req.params?.id;
   const eid = req.body?.eid;
-  console.log(req.body.eid);
+
   const qUser = `DELETE FROM Users WHERE uid='${uid}';`;
   const qEmp = `DELETE FROM Employees WHERE eid='${eid}';`;
   const qEmpSkills = `DELETE FROM EmployeesSkills WHERE eid='${eid}';`;
   const qSIDs = `SELECT sid FROM Skills WHERE sid IN (SELECT sid FROM EmployeesSkills WHERE eid ="${eid}");`;
 
-  // connection.query(qUser, [], (err, result) => err && next(new appError('Failed to delete User', 404)));
+  connection.query(qUser, [], (err, result) => err && next(new appError('Failed to delete User', 404)));
   connection.query(qEmp, [], (err, result) => err && next(new appError('Failed to delete Employee', 404)));
 
   connection.query(qSIDs, [], (err, result) => {
-    if (err) return next(new appError('Failed to delete SIDs', 404));
+    if (err) next(new appError('Failed to delete SIDs', 404));
     result.forEach(sidOBj => {
       connection.query(`DELETE FROM Skills WHERE sid='${sidOBj.sid}';`, [], (err, result) => {
-        if (err) return next(new appError('Failed to delete Skill', 404));
+        if (err) next(new appError('Failed to delete Skill', 404));
       });
     });
     connection.query(qEmpSkills, [], (err, result) => {
-      if (err) return next(new appError('Failed to delete Employee Skills', 404));
+      if (err) next(new appError('Failed to delete Employee Skills', 404));
     });
   });
 
