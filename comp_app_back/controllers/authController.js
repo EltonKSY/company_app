@@ -1,6 +1,5 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
 const { promisify } = require('util');
 
 const connection = require('../database/companyDB');
@@ -37,7 +36,7 @@ exports.authEmployee =
     const { user_name, password } = req.body;
 
     // 1) Check if username and password exist
-    if (!user_name || !password) return next(new appError('Please provide user name and password!', 400));
+    if (!user_name || !password) next(new appError('Please provide user name and password!', 400));
 
     // 2) Check if user exists && password is correct
     const q = `SELECT f_name,  l_name, email, pw, is_active, DOB, Employees.eid AS EID, Employees.uid AS UID FROM Users
@@ -48,9 +47,9 @@ exports.authEmployee =
       q,
       [],
       catchAsync(async function (err, user) {
-        if (!user?.length) return next(new appError('Authentication failed, invalid credentials', 401));
-        if (await bcrypt.compare(req?.body?.password, user[0].pw)) createSendToken(user[0], 201, res);
-        else return next(new appError('Authentication failed, invalid credentials', 401));
+        if (!user?.length) next(new appError('Authentication failed, invalid credentials', 401));
+        if (user[0] && (await bcrypt.compare(req?.body?.password, user[0]?.pw))) createSendToken(user[0], 201, res);
+        else next(new appError('Authentication failed, invalid credentials', 401));
       }),
     );
   }));
@@ -59,7 +58,7 @@ exports.authEmployee =
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
   const JWT = req.headers.authorization?.split(' ')[1];
-  if (!JWT) return next(new appError('You are not logged in! Please log in to get access.', 401));
+  if (!JWT) next(new appError('You are not logged in! Please log in to get access.', 401));
 
   // 2) Decode the token
   const decoded = await promisify(jwt.verify)(JWT, process.env.JWT_SECRET);
@@ -70,12 +69,12 @@ exports.protect = catchAsync(async (req, res, next) => {
     q,
     [],
     catchAsync(async function (err, res) {
-      if (!res?.length) return next(new appError('The user belonging to this token does not exist.', 401));
+      if (!res?.length) next(new appError('The user belonging to this token does not exist.', 401));
       user = res;
       // 4)  GRANT ACCESS TO PROTECTED ROUTE
+      req.user = user;
+
+      next();
     }),
   );
-  req.user = user;
-
-  next();
 });
