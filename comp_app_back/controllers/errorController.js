@@ -1,14 +1,11 @@
-const AppError = require('../helpers/appErrors');
-
 //Dev errors include as much info as possible including the stack trace
-const sendErrorDev = (err, req, res) => {
-  return res.status(err.statusCode).json({
+const sendErrorDev = (err, req, res) =>
+  res.status(err.statusCode).json({
     status: err.status,
     error: err,
     message: err.message,
     stack: err.stack,
   });
-};
 
 const sendErrorProd = (err, req, res) => {
   // A) If it's our error (appError class always has the isOperational field to true)
@@ -19,7 +16,6 @@ const sendErrorProd = (err, req, res) => {
     });
   }
   //unknown error: limit details
-  console.error('ERROR: ', err);
   return res.status(500).json({
     status: 'error',
     message: 'Something went wrong!',
@@ -33,7 +29,7 @@ module.exports = (err, req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, req, res);
   } else {
-    let error = { ...err };
+    const error = { ...err };
     error.message = err.message;
 
     sendErrorProd(error, req, res);

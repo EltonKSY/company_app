@@ -1,14 +1,14 @@
 const { faker } = require('@faker-js/faker');
-const connection = require('../database/companyDB');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
+const connection = require('../database/companyDB');
 
 const dateFormatter = require('../helpers/utilityFunctions').toSQLDate;
 
-const catchAsync = require('./../helpers/catchAsync');
-const appError = require('./../helpers/appErrors');
+const catchAsync = require('../helpers/catchAsync');
+const AppError = require('../helpers/AppErrors');
 
 //{{Validation for all the endpoints is done in the routes by the protect module}}
 
@@ -25,19 +25,19 @@ exports.getEmployees = catchAsync(async (req, res, next) => {
           JOIN Skills ON Skills.sid = EmployeesSkills.sid
     GROUP BY Employees.eid`;
 
-  connection.query(q, [], function (err, result) {
-    if (err) next(new appError(err.code, 404));
+  connection.query(q, (err, result) => {
+    if (err) next(new AppError(err.code, 404));
     return res.status(200).json({
       status: 'success',
       result,
     });
   });
 });
-async function ownUser(req) {
+async function ownUser(req, next) {
   // 1) Getting token and check of it's there
   const JWT = req.headers.authorization?.split(' ')[1];
-  //   console.log(JWT);
-  if (!JWT) next(new appError('You are not logged in! Please log in to get access.', 401));
+
+  if (!JWT) next(new AppError('You are not logged in! Please log in to get access.', 401));
 
   // 2) Decode the token
   const decoded = await promisify(jwt.verify)(JWT, process.env.JWT_SECRET);
@@ -45,7 +45,7 @@ async function ownUser(req) {
 }
 //Get  employee if JWT is valid and id is valid
 exports.getEmployee = catchAsync(async (req, res, next) => {
-  const uid = req.params?.id === 'currUser' ? await ownUser(req) : req.params?.id;
+  const uid = req.params?.id === 'currUser' ? await ownUser(req, next) : req.params?.id;
   const q = `
   SELECT f_name,  l_name, user_name, email, is_active, DOB, Employees.eid AS EID, Employees.uid UID,
     CONCAT("[",GROUP_CONCAT(CONCAT("""", skill_name, """" )), "]") AS skills, 
@@ -59,8 +59,8 @@ exports.getEmployee = catchAsync(async (req, res, next) => {
             Skills.sid =  EmployeesSkills.sid
       WHERE Employees.uid = "${uid}";`;
 
-  connection.query(q, [], function (err, result) {
-    if (err) next(new appError(err.code, 404));
+  connection.query(q, (err, result) => {
+    if (err) next(new AppError(err.code, 404));
     else
       return res.status(200).json({
         status: 'success',
@@ -69,8 +69,8 @@ exports.getEmployee = catchAsync(async (req, res, next) => {
   });
 });
 
-const queryPromise = (q, values) => {
-  return new Promise((resolve, reject) => {
+const queryPromise = (q, values) =>
+  new Promise((resolve, reject) => {
     connection.query(q, [values], (error, results) => {
       if (error) {
         return reject(error);
@@ -78,10 +78,9 @@ const queryPromise = (q, values) => {
       return resolve(results);
     });
   });
-};
 
 //Add employee if JWT is valid
-exports.addEmployee = catchAsync(async (req, res) => {
+exports.addEmployee = catchAsync(async (req, res, next) => {
   const GUIDUser = crypto.randomUUID();
   const GUIDEmp = crypto.randomUUID();
   const { fname, lname, email, DOB, PW, isActive, skills } = req.body;
@@ -103,19 +102,19 @@ exports.addEmployee = catchAsync(async (req, res) => {
     const q3 = 'INSERT INTO Skills (sid, lvl, skill_name) VALUES ?';
     const q4 = 'INSERT INTO EmployeesSkills (id, eid, sid) VALUES ?';
 
-    connection.query(q1, [[[GUIDUser, userName, hashedPassword]]], function (err, result) {
-      if (err) next(new appError('Could not create user', 404));
+    connection.query(q1, [[[GUIDUser, userName, hashedPassword]]], (err, result) => {
+      if (err) next(new AppError('Could not create user', 404));
     });
 
-    connection.query(q2, [[[GUIDEmp, GUIDUser, fname, lname, dateFormatter(new Date(DOB)), email, isActive]]], function (err, result) {
-      if (err) next(new appError('Could not create Employee', 404));
+    connection.query(q2, [[[GUIDEmp, GUIDUser, fname, lname, dateFormatter(new Date(DOB)), email, isActive]]], (err, result) => {
+      if (err) next(new AppError('Could not create Employee', 404));
     });
 
-    connection.query(q3, [skillsData], function (err, result) {
-      if (err) next(new appError('Could not add skills', 404));
+    connection.query(q3, [skillsData], (err, result) => {
+      if (err) next(new AppError('Could not add skills', 404));
     });
-    connection.query(q4, [employeeSkillsData], function (err, result) {
-      if (err) next(new appError('Could not create skills and data', 404));
+    connection.query(q4, [employeeSkillsData], (err, result) => {
+      if (err) next(new AppError('Could not create skills and data', 404));
     });
 
     return res.status(200).json({
@@ -156,11 +155,11 @@ exports.updateEmployee = catchAsync(async (req, res, next) => {
 
     prevSids.forEach(sidOBj => {
       connection.query(`DELETE FROM Skills WHERE sid='${sidOBj.sid}';`, (err, result) => {
-        if (err) next(new appError('Failed to delete Skill', 404));
+        if (err) next(new AppError('Failed to delete Skill', 404));
       });
     });
   } catch (error) {
-    next(new appError('Failed to add user', 404));
+    next(new AppError('Failed to add user', 404));
   }
 
   next();
@@ -176,18 +175,18 @@ exports.deleteEmployee = catchAsync(async (req, res, next) => {
   const qEmpSkills = `DELETE FROM EmployeesSkills WHERE eid='${eid}';`;
   const qSIDs = `SELECT sid FROM Skills WHERE sid IN (SELECT sid FROM EmployeesSkills WHERE eid ="${eid}");`;
 
-  connection.query(qUser, (err, result) => err && next(new appError('Failed to delete User', 404)));
-  connection.query(qEmp, (err, result) => err && next(new appError('Failed to delete Employee', 404)));
+  connection.query(qUser, (err, result) => err && next(new AppError('Failed to delete User', 404)));
+  connection.query(qEmp, (err, result) => err && next(new AppError('Failed to delete Employee', 404)));
 
-  connection.query(qSIDs, (err, result) => {
-    if (err) next(new appError('Failed to delete SIDs', 404));
-    result.forEach(sidOBj => {
+  connection.query(qSIDs, (errSIDs, resultSID) => {
+    if (errSIDs) next(new AppError('Failed to delete SIDs', 404));
+    resultSID.forEach(sidOBj => {
       connection.query(`DELETE FROM Skills WHERE sid='${sidOBj.sid}';`, [], (err, result) => {
-        if (err) next(new appError('Failed to delete Skill', 404));
+        if (err) next(new AppError('Failed to delete Skill', 404));
       });
     });
     connection.query(qEmpSkills, [], (err, result) => {
-      if (err) next(new appError('Failed to delete Employee Skills', 404));
+      if (err) next(new AppError('Failed to delete Employee Skills', 404));
     });
   });
 

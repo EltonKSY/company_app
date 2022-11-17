@@ -5,12 +5,13 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 
 const employeesRouter = require('./routes/employeesRoutes');
-const authRouter = require('./routes/authRoutes.js');
-const appError = require('./helpers/appErrors');
+const authRouter = require('./routes/authRoutes');
+const AppError = require('./helpers/AppErrors');
 const errorHandler = require('./controllers/errorController');
 
 const app = express();
-dotenv.config({ path: __dirname + '/.env' });
+// eslint-disable-next-line no-path-concat
+dotenv.config({ path: `${__dirname}/.env` });
 
 // 1) MIDDLEWARES
 //Use morgan to log when in dev mode
@@ -27,7 +28,7 @@ app.use('/Employees', employeesRouter);
 app.use('/Authenticate', authRouter);
 
 app.all('*', (req, res, next) => {
-  next(new appError(`Can't find ${req.originalUrl} on this server!`, 404));
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
 app.use(errorHandler);
