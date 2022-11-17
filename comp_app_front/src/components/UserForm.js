@@ -3,13 +3,14 @@ import { padTo2Digits, validateEmail } from '../helpers/validators';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faPlus, faChevronCircleLeft, faChevronCircleRight } from '@fortawesome/free-solid-svg-icons';
 import { useCreate } from '../hooks/useCreate';
+import { useUpdate } from '../hooks/useUpdate';
 
 import styles from './Forms.module.css';
 import classes from './UserForm.module.css';
 
-function UserForm({ user, onConfirm }) {
-  const { createUser, error, isPending } = useCreate();
-
+function UserForm({ user, closeModal }) {
+  const { createUser, createError, isPendingCreate } = useCreate();
+  const { updateUser, updateError, isPendingUpdate } = useUpdate();
   const [fname, setFName] = useState(user?.fname);
   const [lname, setLName] = useState(user?.lname);
   const [email, setEmail] = useState(user?.email);
@@ -32,17 +33,22 @@ function UserForm({ user, onConfirm }) {
 
   const submitHandler = async function (e) {
     e.preventDefault();
-
-    await createUser({
+    const userFields = {
       fname,
       lname,
       email,
       DOB,
-      PW,
       isActive,
       skills,
-    });
-    !error ? onConfirm() : setErrMsg(error);
+    };
+
+    if (user) {
+      userFields.UID = user.UID;
+      userFields.EID = user.EID;
+    }
+
+    !user ? await createUser(userFields) : await updateUser(userFields);
+    !updateError && !createError ? closeModal() : setErrMsg(updateError || createError);
 
     return;
   };
@@ -189,13 +195,14 @@ function UserForm({ user, onConfirm }) {
                 type="button"
                 className={classes.button_add}
                 onClick={() => {
-                  if (!newSkillName && !newSkillLevel) {
-                    setErrMsg('Please a valid skill first before adding more.');
+                  if (!newSkillName || !newSkillLevel) {
+                    setErrMsg('Skills: Please add a valid skill first before adding more.');
                     return;
                   }
                   setSkills([...skills, { name: newSkillName, level: newSkillLevel }]);
                   setNewSkillLevel('');
                   setNewSkillName('');
+                  errMsg?.includes('Skills') && setErrMsg('');
                 }}
               >
                 <FontAwesomeIcon icon={faPlus} />

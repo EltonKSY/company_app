@@ -12,7 +12,7 @@ router.route('/').get(authController.protect, employeeController.getEmployees).p
 router
   .route('/:id')
   .get(authController.protect, employeeController.getEmployee)
-  .patch(authController.protect, employeeController.updateEmployee)
+  .patch(authController.protect, employeeController.updateEmployee, employeeController.getEmployee)
   .delete(authController.protect, employeeController.deleteEmployee);
 
 module.exports = router;

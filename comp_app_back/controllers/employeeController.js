@@ -163,10 +163,7 @@ exports.updateEmployee = catchAsync(async (req, res, next) => {
     next(new appError('Failed to add user', 404));
   }
 
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!',
-  });
+  next();
 });
 
 //Delete employee if JWT is valid
