@@ -1,8 +1,7 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState } from 'react';
 import { getCookie } from '../helpers/validators';
 
 export const useUpdate = () => {
-  const [isCancelled, setIsCancelled] = useState(false);
   const [error, setError] = useState(null);
   const [isPending, setIsPending] = useState(false);
 
@@ -20,15 +19,10 @@ export const useUpdate = () => {
       body: JSON.stringify(updatedUser),
     });
     const res = await req.json();
-    //2a) If PW or Username is invalid, display errmessage
+    //2) If request fails display errmessage
     if (!req.ok) setError(res.message);
-    //2b) Set JWT in cookie for future request
-    else {
-    }
     setIsPending(false);
   };
-  useEffect(() => {
-    return () => setIsCancelled(true);
-  }, []);
+
   return { updateUser, isPending, error };
 };

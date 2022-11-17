@@ -1,8 +1,7 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState } from 'react';
 import { getCookie } from '../helpers/validators';
 
 export const useCreate = () => {
-  const [isCancelled, setIsCancelled] = useState(false);
   const [error, setError] = useState(null);
   const [isPending, setIsPending] = useState(false);
 
@@ -28,8 +27,6 @@ export const useCreate = () => {
     }
     setIsPending(false);
   };
-  useEffect(() => {
-    return () => setIsCancelled(true);
-  }, []);
+
   return { createUser, isPending, error };
 };
