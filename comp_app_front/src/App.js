@@ -12,14 +12,15 @@ function App() {
 
   return (
     <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/auth" element={ctx.user ? <ListingPage /> : <AuthPage />} />
-          <Route path="/listing" element={ctx.user ? <ListingPage /> : <AuthPage />} />
-
-          <Route path="*" element={<AuthPage />} />
-        </Routes>
-      </BrowserRouter>
+      {ctx.authIsReady && (
+        <BrowserRouter>
+          <Routes>
+            <Route path="/auth" element={ctx.user ? <ListingPage /> : <AuthPage />} />
+            <Route path="/listing" element={ctx.user ? <ListingPage /> : <AuthPage />} />
+            <Route path="*" element={<AuthPage />} />
+          </Routes>
+        </BrowserRouter>
+      )}
     </>
   );
 }

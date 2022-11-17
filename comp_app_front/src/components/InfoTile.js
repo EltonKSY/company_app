@@ -63,21 +63,20 @@ function InfoTile({ user }) {
   const dob = user?.DOB;
   const age = diff_years(new Date(), new Date(dob));
   const email = user?.email;
-  const uid = user?.UID;
   const isActive = user?.is_active;
 
   const skills = fname ? JSON.parse(user?.skills) : [];
   const levels = fname ? JSON.parse(user?.levels) : [];
   const skillsLevels = skills.map((skill, index) => ({ level: levels[index], name: skill }));
 
+  const closeModal = () => setDisplayModal(0);
+
   return (
     <>
       {displayModal === 1 && (
-        <Modal component={<UserForm user={{ fname, lname, dob, age, email, skillsLevels, uid, isActive }} />} onConfirm={() => setDisplayModal(0)} />
+        <Modal component={<UserForm user={{ fname, lname, dob, age, email, skillsLevels, UID, EID, isActive }} />} onConfirm={closeModal} />
       )}
-      {displayModal === 2 && (
-        <Modal component={<DeleteUser fname={fname} UID={UID} EID={EID} closeModal={() => setDisplayModal(0)} />} onConfirm={() => setDisplayModal(0)} />
-      )}
+      {displayModal === 2 && <Modal component={<DeleteUser fname={fname} UID={UID} EID={EID} />} onConfirm={closeModal} />}
 
       <div className={styles.main_info}>
         <span className={styles.main_span}>

@@ -25,7 +25,8 @@ export const FullContextProvider = ({ children }) => {
 
   useEffect(() => {
     //If there exists a JWT, check if it is still valid and log the user in
-    !isLoading && !error && dispatch({ type: 'AUTH_READY', payload: currUser });
+    if (!isLoading && !error) dispatch({ type: 'AUTH_READY', payload: currUser });
+    else dispatch({ type: 'AUTH_READY', payload: null });
   }, [currUser, isLoading, error]);
 
   return <FullContext.Provider value={{ ...state, dispatch }}>{children}</FullContext.Provider>;

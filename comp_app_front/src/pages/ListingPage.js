@@ -62,8 +62,8 @@ function ListingPage() {
         </button>
         <div className={styles.table}>
           <InfoTile key="title-tile" />
-          {cat !== 'INACTIVE' && activeEmps?.map(user => <InfoTile key={user.uid} user={user} />)}
-          {cat !== 'ACTIVE' && inactiveEmps?.map(user => <InfoTile key={user.uid} user={user} />)}
+          {cat !== 'INACTIVE' && activeEmps?.map(user => <InfoTile key={`${user.uid}-INACTIVE`} user={user} />)}
+          {cat !== 'ACTIVE' && inactiveEmps?.map(user => <InfoTile key={`${user.uid}-ACTIVE`} user={user} />)}
         </div>
       </div>
     </>
