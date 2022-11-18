@@ -1,23 +1,16 @@
 import { useEffect, useState } from 'react';
-import { getCookie } from '../helpers/validators';
 
 export const useGetRows = path => {
-  const [rows, setRows] = useState(null);
+  const [rows, setRows] = useState([]);
   const [error, setError] = useState();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const cookie = getCookie('comp_app_JWT');
-
-      if (!getCookie('comp_app_JWT')) {
-        setRows(null);
-        setIsLoading(false);
-      }
       const allRows = await fetch(`http://localhost:3001/Employees/${path || ''}`, {
+        credentials: 'include',
         headers: {
           'Content-Type': 'application / json',
-          Authorization: cookie,
         },
       })
         .then(res => {
@@ -30,7 +23,11 @@ export const useGetRows = path => {
         .then(res => {
           return res.result;
         })
-        .catch(error => setError(error));
+        .catch(error => {
+          setError(error.message);
+          setIsLoading(false);
+          return;
+        });
       setRows(allRows);
       setIsLoading(false);
     })();

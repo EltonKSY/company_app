@@ -48,9 +48,14 @@
 }
 
 .input_container label {
+  opacity: 0;
   font-size: 1.2rem;
   font-weight: 500;
   transition: all 0.3s ease-in;
+}
+
+.checkbox_label label {
+  opacity: 1;
 }
 
 .input_container input:not(:placeholder-shown) + label {
@@ -109,4 +114,12 @@
   opacity: 1;
   font-size: 1.2rem;
   font-weight: 500;
+}
+
+.bottom {
+  margin: auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
 }

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { getCookie } from '../helpers/validators';
 
 export const useCreate = () => {
   const [error, setError] = useState(null);
@@ -7,15 +6,13 @@ export const useCreate = () => {
 
   const createUser = async newUser => {
     setIsPending(true);
-
-    const cookie = getCookie('comp_app_JWT');
     //1) Send request with new user info
     const req = await fetch('http://localhost:3001/Employees', {
       method: 'POST',
+      credentials: 'include',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        Authorization: cookie,
       },
       body: JSON.stringify(newUser),
     });

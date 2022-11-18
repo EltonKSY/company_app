@@ -1,3 +1,5 @@
+/* eslint-disable testing-library/no-node-access */
+/* eslint-disable testing-library/no-render-in-setup */
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
@@ -13,7 +15,7 @@ const testUser = {
   email: 'user1@gmail.com',
   skill: ['Front-End Developer'],
   password: 'Password',
-  uid: 66,
+  UID: 66,
   isActive: true,
 };
 
@@ -38,18 +40,7 @@ const unmountedCheck = btnName => {
 
 describe('Table and form mounting and unmounting', () => {
   beforeEach(() => {
-    render(
-      <InfoTile
-        key={testUser.id}
-        uid={testUser.id}
-        fname={testUser.fname}
-        lname={testUser.lname}
-        dob={testUser.dob}
-        email={testUser.email}
-        skill={testUser.skill}
-        isActive={true}
-      />,
-    );
+    render(<InfoTile user={testUser} />);
   });
 
   describe('Edit and Delete components mount', () => {

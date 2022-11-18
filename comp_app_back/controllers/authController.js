@@ -5,6 +5,7 @@ const { promisify } = require('util');
 const connection = require('../database/companyDB');
 const catchAsync = require('../helpers/catchAsync');
 const AppError = require('../helpers/AppErrors');
+const { getCookie } = require('../helpers/utilityFunctions');
 
 /**
  * Signs a token based on an id field.
@@ -26,7 +27,7 @@ const createSendToken = (user, statusCode, res) => {
   };
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
-  res.cookie('jwt', token, cookieOptions);
+  res.cookie('comp_app_JWT', token, cookieOptions);
 
   user.pw = undefined;
 
@@ -70,7 +71,8 @@ exports.authEmployee =
  */
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
-  const JWT = req.headers.authorization?.split(' ')[1];
+  const JWT = getCookie(req.headers.cookie, 'comp_app_JWT');
+
   if (!JWT) return next(new AppError('You are not logged in! Please log in to get access.', 401));
   // 2) Decode the token
   const decoded = await promisify(jwt.verify)(JWT, process.env.JWT_SECRET);

@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-render-in-setup */
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 

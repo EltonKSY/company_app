@@ -1,39 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 
-import { diff_years, getCookie } from '../helpers/validators';
+import { diff_years } from '../helpers/validators';
+import { useDelete } from '../hooks/useDelete';
 
 import Modal from './Modal';
 import UserForm from './UserForm';
 
 import styles from './InfoTile.module.css';
 
-function DeleteUser({ fname, UID, EID, closeModal }) {
-  const deleteHandler = async function () {
-    const cookie = getCookie('comp_app_JWT');
-    if (!getCookie('comp_app_JWT')) return;
+function DeleteUser({ fname, UID, closeModal }) {
+  const { deleteUser, deleted } = useDelete(UID);
 
-    fetch(`http://localhost:3001/Employees/${UID}`, {
-      method: 'DELETE',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        Authorization: cookie,
-      },
-      body: JSON.stringify({
-        eid: EID,
-      }),
-    })
-      .then(res => {
-        if (res.ok) {
-          closeModal();
-        } else {
-          throw new Error('Something went wrong, Request Failed!');
-        }
-      })
-      .catch(error => console.log(error));
-  };
+  useEffect(() => {
+    deleted && closeModal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deleted]);
 
   return (
     <div className={styles.del_container}>
@@ -42,7 +25,7 @@ function DeleteUser({ fname, UID, EID, closeModal }) {
       <p>{`Are you sure you would like to permanently delete ${fname}?`} </p>
       <br />
       <div className={styles.del_btns}>
-        <button aria-label="delete" className="btn_red" onClick={deleteHandler}>
+        <button aria-label="delete" className="btn_red" onClick={deleteUser}>
           Delete
         </button>
         <button aria-label="delete" className="btn_blue" onClick={closeModal}>

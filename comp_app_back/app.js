@@ -13,10 +13,16 @@ const app = express();
 dotenv.config({ path: `${__dirname}/.env` });
 
 // 1) MIDDLEWARES
-//Use morgan to log when in dev mode
+//a)Use morgan to log when in dev mode
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
-app.use(cors());
+//b)Use cors to allow cookies to be set/sent
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 // 2) BODY PARSERS ADDED TO APP
 app.use(bodyParser.urlencoded({ extended: false }));

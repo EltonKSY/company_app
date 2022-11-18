@@ -15,6 +15,18 @@ module.exports = {
 
   /**
    *
+   * @param {String} cookies
+   * @param {String} cookieName
+   * @returns String
+   */
+  getCookie: (cookies, cookieName) => {
+    const value = `; ${cookies}`;
+    const parts = value.split(`; ${cookieName}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  },
+
+  /**
+   *
    * @param {String} q
    * @param {Array} values
    * @returns Promise
@@ -36,7 +48,7 @@ module.exports = {
    */
   checkCurrUser: async function checkCurrUser(req, next) {
     // 1) Getting token and check if it's there
-    const JWT = req.headers.authorization?.split(' ')[1];
+    const JWT = module.exports.getCookie(req.headers.cookie, 'comp_app_JWT');
 
     if (!JWT) next(new AppError('You are not logged in! Please log in to get access.', 401));
 
