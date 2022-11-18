@@ -12,7 +12,8 @@ import styles from './ListingPage.module.css';
 
 function ListingPage() {
   const ctx = useContext(FullContext);
-  const { rows: employees, error, isLoading } = useGetRows('');
+  const [changed, setChanged] = useState(false);
+  const { rows: employees, error, isLoading } = useGetRows('', changed);
 
   const [displayModal, setDisplayModal] = useState(false);
   const [cat, setCat] = useState('ALL');
@@ -27,7 +28,7 @@ function ListingPage() {
 
     setActiveEmps(active);
     setInactiveEmps(inactive);
-  }, [employees]);
+  }, [employees, changed]);
 
   const addUser = function () {
     setDisplayModal(true);
@@ -38,7 +39,19 @@ function ListingPage() {
     <>
       {!isLoading && !error && (
         <>
-          {displayModal && <Modal component={<UserForm onConfirm={() => setDisplayModal(false)} />} onConfirm={() => setDisplayModal(false)} />}
+          {displayModal && (
+            <Modal
+              component={
+                <UserForm
+                  onConfirm={() => {
+                    setChanged(changed => !changed);
+                    setDisplayModal(false);
+                  }}
+                />
+              }
+              onConfirm={() => setDisplayModal(false)}
+            />
+          )}
           <div className={styles.container}>
             <header className={styles.header}>
               <p>
@@ -63,8 +76,8 @@ function ListingPage() {
             </button>
             <div className={styles.table}>
               <InfoTile key="title-tile" />
-              {cat !== 'INACTIVE' && activeEmps?.map(user => <InfoTile key={`${user.UID}-INACTIVE`} user={user} />)}
-              {cat !== 'ACTIVE' && inactiveEmps?.map(user => <InfoTile key={`${user.UID}-ACTIVE`} user={user} />)}
+              {cat !== 'INACTIVE' && activeEmps?.map(user => <InfoTile setChanged={setChanged} changed={changed} key={`${user.UID}-INACTIVE`} user={user} />)}
+              {cat !== 'ACTIVE' && inactiveEmps?.map(user => <InfoTile setChanged={setChanged} changed={changed} key={`${user.UID}-ACTIVE`} user={user} />)}
             </div>
           </div>
         </>

@@ -18,7 +18,8 @@ exports.getEmployees = catchAsync(async (req, res, next) => {
     FROM Employees
       JOIN EmployeesSkills ON Employees.eid = EmployeesSkills.eid
           JOIN Skills ON Skills.sid = EmployeesSkills.sid
-    GROUP BY Employees.eid;`;
+    GROUP BY Employees.eid 
+    ORDER BY l_name;`;
 
   const result = await queryPromise(q);
 
