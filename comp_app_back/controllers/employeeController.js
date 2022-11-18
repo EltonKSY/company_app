@@ -1,19 +1,14 @@
 const { faker } = require('@faker-js/faker');
-const jwt = require('jsonwebtoken');
-const { promisify } = require('util');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const connection = require('../database/companyDB');
 
-const dateFormatter = require('../helpers/utilityFunctions').toSQLDate;
+const { queryPromise, checkCurrUser, getEmpInfo } = require('../helpers/utilityFunctions');
 
 const catchAsync = require('../helpers/catchAsync');
-const AppError = require('../helpers/AppErrors');
-
-//{{Validation for all the endpoints is done in the routes by the protect module}}
 
 //Get all employees
 exports.getEmployees = catchAsync(async (req, res, next) => {
+  //Concat Used to turn each employee skill into a json array
   const q = `
   SELECT
     f_name, l_name, email, DOB, is_active, Employees.uid AS UID, 
@@ -23,31 +18,23 @@ exports.getEmployees = catchAsync(async (req, res, next) => {
     FROM Employees
       JOIN EmployeesSkills ON Employees.eid = EmployeesSkills.eid
           JOIN Skills ON Skills.sid = EmployeesSkills.sid
-    GROUP BY Employees.eid`;
+    GROUP BY Employees.eid;`;
 
-  connection.query(q, (err, result) => {
-    if (err) next(new AppError(err.code, 404));
-    return res.status(200).json({
-      status: 'success',
-      result,
-    });
+  const result = await queryPromise(q);
+
+  return res.status(200).json({
+    status: 'success',
+    result,
   });
 });
-async function ownUser(req, next) {
-  // 1) Getting token and check of it's there
-  const JWT = req.headers.authorization?.split(' ')[1];
 
-  if (!JWT) next(new AppError('You are not logged in! Please log in to get access.', 401));
-
-  // 2) Decode the token
-  const decoded = await promisify(jwt.verify)(JWT, process.env.JWT_SECRET);
-  return decoded.id;
-}
 //Get  employee if JWT is valid and id is valid
 exports.getEmployee = catchAsync(async (req, res, next) => {
-  const uid = req.params?.id === 'currUser' ? await ownUser(req, next) : req.params?.id;
+  const uid = req.params?.id === 'currUser' ? await checkCurrUser(req, next) : req.params?.id;
+
+  //Concat is Used to turn employee skill into a json array
   const q = `
-  SELECT f_name,  l_name, user_name, email, is_active, DOB, Employees.eid AS EID, Employees.uid UID,
+  SELECT f_name,  l_name, user_name, email, is_active, DOB, Employees.eid AS EID, Employees.uid AS UID,
     CONCAT("[",GROUP_CONCAT(CONCAT("""", skill_name, """" )), "]") AS skills, 
     CONCAT("[",GROUP_CONCAT(CONCAT("""", lvl, """" )), "]") AS levels
     FROM Users
@@ -59,63 +46,36 @@ exports.getEmployee = catchAsync(async (req, res, next) => {
             Skills.sid =  EmployeesSkills.sid
       WHERE Employees.uid = "${uid}";`;
 
-  connection.query(q, (err, result) => {
-    if (err) next(new AppError(err.code, 404));
-    else
-      return res.status(200).json({
-        status: 'success',
-        result: result[0] || null,
-      });
+  const result = await queryPromise(q);
+
+  return res.status(200).json({
+    status: 'success',
+    result: result[0] || null,
   });
 });
 
-const queryPromise = (q, values) =>
-  new Promise((resolve, reject) => {
-    connection.query(q, [values], (error, results) => {
-      if (error) {
-        return reject(error);
-      }
-      return resolve(results);
-    });
-  });
-
-//Add employee if JWT is valid
-exports.addEmployee = catchAsync(async (req, res, next) => {
+exports.addEmployee = catchAsync(async (req, res) => {
+  // 1) Normalize and hash incoming Emp data
   const GUIDUser = crypto.randomUUID();
   const GUIDEmp = crypto.randomUUID();
-  const { fname, lname, email, DOB, PW, isActive, skills } = req.body;
+  const { PW } = req.body;
+  const { fname, lname, email, isActive, formattedDOB, skillsData, employeeSkillsData } = await getEmpInfo(req, GUIDEmp, GUIDEmp);
   const userName = faker.internet.userName(lname);
   const hashedPassword = await bcrypt.hash(PW, 10);
 
-  const skillsData = [];
-  const employeeSkillsData = [];
+  //2) Terminate request if invalid data is found
+  if (GUIDUser && GUIDEmp && fname && lname && email && hashedPassword && typeof isActive === 'boolean' && skillsData?.length) {
+    //Queries
+    const qInsertUsers = 'INSERT INTO Users (uid, user_name, pw) VALUES ?';
+    const qInsertEmps = 'INSERT INTO Employees (eid, uid, f_name, l_name, DOB, email, is_active) VALUES ?';
+    const qInsertSkills = 'INSERT INTO Skills (sid, lvl, skill_name) VALUES ?';
+    const qInsertEmSkills = 'INSERT INTO EmployeesSkills (id, eid, sid) VALUES ?';
 
-  skills.forEach(skill => {
-    const GUIDSkill = crypto.randomUUID();
-    skillsData.push([GUIDSkill, skill.level, skill.name]);
-    employeeSkillsData.push([null, GUIDEmp, GUIDSkill]);
-  });
-
-  if (GUIDUser && GUIDEmp && fname && lname && email && DOB && PW && hashedPassword && isActive && skills?.length) {
-    const q1 = 'INSERT INTO Users (uid, user_name, pw) VALUES ?';
-    const q2 = 'INSERT INTO Employees (eid, uid, f_name, l_name, DOB, email, is_active) VALUES ?';
-    const q3 = 'INSERT INTO Skills (sid, lvl, skill_name) VALUES ?';
-    const q4 = 'INSERT INTO EmployeesSkills (id, eid, sid) VALUES ?';
-
-    connection.query(q1, [[[GUIDUser, userName, hashedPassword]]], (err, result) => {
-      if (err) next(new AppError('Could not create user', 404));
-    });
-
-    connection.query(q2, [[[GUIDEmp, GUIDUser, fname, lname, dateFormatter(new Date(DOB)), email, isActive]]], (err, result) => {
-      if (err) next(new AppError('Could not create Employee', 404));
-    });
-
-    connection.query(q3, [skillsData], (err, result) => {
-      if (err) next(new AppError('Could not add skills', 404));
-    });
-    connection.query(q4, [employeeSkillsData], (err, result) => {
-      if (err) next(new AppError('Could not create skills and data', 404));
-    });
+    //3) Insert Data and respond with new User
+    await queryPromise(qInsertUsers, [[GUIDUser, userName, hashedPassword]]);
+    await queryPromise(qInsertEmps, [[GUIDEmp, GUIDUser, fname, lname, formattedDOB, email, isActive]]);
+    await queryPromise(qInsertSkills, skillsData);
+    await queryPromise(qInsertEmSkills, employeeSkillsData);
 
     return res.status(200).json({
       status: 'success',
@@ -124,71 +84,62 @@ exports.addEmployee = catchAsync(async (req, res, next) => {
   }
   return res.status(404).json({
     status: 'fail',
-    message: 'Invalid request, please check all fields',
+    message: 'Invalid request, incorrect fields',
   });
 });
 
-//Update employee if JWT is valid
 exports.updateEmployee = catchAsync(async (req, res, next) => {
-  const { EID, fname, lname, email, DOB, isActive, skills } = req.body;
-  const formattedDOB = dateFormatter(new Date(DOB));
-  const skillsData = [];
-  const employeeSkillsData = [];
+  const { EID, fname, lname, email, isActive, formattedDOB, skillsData, employeeSkillsData } = await getEmpInfo(req);
 
-  skills.forEach(skill => {
-    const GUIDSkill = crypto.randomUUID();
-    skillsData.push([GUIDSkill, skill.level, skill.name]);
-    employeeSkillsData.push([null, EID, GUIDSkill]);
-  });
+  //Queries
   const qOldSids = `SELECT sid from EmployeesSkills WHERE eid = "${EID}";`;
-  const qUpdateEmployee = `UPDATE Employees SET f_name = '${fname}', l_name = '${lname}', email = '${email}', DOB = '${formattedDOB}', is_active = ${isActive} WHERE eid = '${EID}'`;
+  const qUpdateEmployee = `UPDATE Employees 
+                              SET f_name = '${fname}', l_name = '${lname}', 
+                              email = '${email}', DOB = '${formattedDOB}', 
+                              is_active = ${isActive} WHERE eid = '${EID}'`;
   const qDelSkills = `DELETE FROM EmployeesSkills WHERE eid='${EID}';`;
-  const q3 = 'INSERT INTO Skills (sid, lvl, skill_name) VALUES ?';
-  const q4 = 'INSERT INTO EmployeesSkills (id, eid, sid) VALUES ?';
+  const qInserSkills = 'INSERT INTO Skills (sid, lvl, skill_name) VALUES ?';
+  const qInsertEmpsSkills = 'INSERT INTO EmployeesSkills (id, eid, sid) VALUES ?';
 
-  try {
-    const prevSids = await queryPromise(qOldSids);
-    await queryPromise(qUpdateEmployee);
-    await queryPromise(qDelSkills);
-    await queryPromise(q3, skillsData);
-    await queryPromise(q4, employeeSkillsData);
+  //1) Gather all old skill IDs to be deleted
+  const prevSids = await queryPromise(qOldSids);
 
-    prevSids.forEach(sidOBj => {
-      connection.query(`DELETE FROM Skills WHERE sid='${sidOBj.sid}';`, (err, result) => {
-        if (err) next(new AppError('Failed to delete Skill', 404));
-      });
-    });
-  } catch (error) {
-    next(new AppError('Failed to add user', 404));
-  }
+  // 2) Delete old skills from Skills & EmployeeSkills Junction Table
+  await queryPromise(qDelSkills);
+  prevSids.forEach(sidOBj => queryPromise(`DELETE FROM Skills WHERE sid='${sidOBj.sid}';`));
 
+  //3) Update New Employee Info
+  await queryPromise(qUpdateEmployee);
+  await queryPromise(qInserSkills, skillsData);
+  await queryPromise(qInsertEmpsSkills, employeeSkillsData);
+
+  // 4) send a request to get employees to return new udated data
   next();
 });
 
-//Delete employee if JWT is valid
 exports.deleteEmployee = catchAsync(async (req, res, next) => {
-  const uid = req.params?.id;
-  const eid = req.body?.eid;
+  const UID = req.params?.id;
 
-  const qUser = `DELETE FROM Users WHERE uid='${uid}';`;
-  const qEmp = `DELETE FROM Employees WHERE eid='${eid}';`;
-  const qEmpSkills = `DELETE FROM EmployeesSkills WHERE eid='${eid}';`;
-  const qSIDs = `SELECT sid FROM Skills WHERE sid IN (SELECT sid FROM EmployeesSkills WHERE eid ="${eid}");`;
+  // 1) GET Corresponding Employee ID (EID)
+  const EIDArr = await queryPromise(`SELECT eid FROM Employees WHERE Employees.uid = "${UID}";`);
+  const EID = EIDArr[0].eid;
 
-  connection.query(qUser, (err, result) => err && next(new AppError('Failed to delete User', 404)));
-  connection.query(qEmp, (err, result) => err && next(new AppError('Failed to delete Employee', 404)));
+  //Queries
+  const qSIDs = `SELECT sid FROM Skills WHERE sid IN (SELECT sid FROM EmployeesSkills WHERE eid ="${EID}");`;
+  const qUser = `DELETE FROM Users WHERE uid='${UID}';`;
+  const qEmp = `DELETE FROM Employees WHERE eid='${EID}';`;
+  const qEmpSkills = `DELETE FROM EmployeesSkills WHERE eid='${EID}';`;
 
-  connection.query(qSIDs, (errSIDs, resultSID) => {
-    if (errSIDs) next(new AppError('Failed to delete SIDs', 404));
-    resultSID.forEach(sidOBj => {
-      connection.query(`DELETE FROM Skills WHERE sid='${sidOBj.sid}';`, [], (err, result) => {
-        if (err) next(new AppError('Failed to delete Skill', 404));
-      });
-    });
-    connection.query(qEmpSkills, [], (err, result) => {
-      if (err) next(new AppError('Failed to delete Employee Skills', 404));
-    });
+  //2) Gather all Skills Ids with EID before deleting from EmployeeSkills Table
+  const SIDs = await queryPromise(qSIDs);
+  SIDs.forEach(sidOBj => {
+    queryPromise(`DELETE FROM Skills WHERE sid='${sidOBj.sid}';`);
   });
+
+  //3) Delete from Users, Employees and EmployeeSkills table
+  queryPromise(qUser);
+  queryPromise(qEmp);
+  queryPromise(qEmpSkills);
 
   return res.status(200).json({
     status: 'success',
