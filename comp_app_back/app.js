@@ -10,7 +10,6 @@ const AppError = require('./helpers/AppErrors');
 const errorHandler = require('./controllers/errorController');
 
 const app = express();
-// eslint-disable-next-line no-path-concat
 dotenv.config({ path: `${__dirname}/.env` });
 
 // 1) MIDDLEWARES

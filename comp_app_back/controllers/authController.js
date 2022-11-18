@@ -6,11 +6,18 @@ const connection = require('../database/companyDB');
 const catchAsync = require('../helpers/catchAsync');
 const AppError = require('../helpers/AppErrors');
 
+/**
+ * Signs a token based on an id field.
+ */
 const signToken = id =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
+/**
+ * Creates a signed token and sets it to cookies on the current user browser
+ * Password is not sent back as part of the response
+ */
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user.UID);
   const cookieOptions = {
@@ -20,7 +27,9 @@ const createSendToken = (user, statusCode, res) => {
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
   res.cookie('jwt', token, cookieOptions);
+
   user.pw = undefined;
+
   return res.status(statusCode).json({
     status: 'success',
     token,
@@ -28,7 +37,10 @@ const createSendToken = (user, statusCode, res) => {
   });
 };
 
-//Authenticate user and return JWT if valid
+/**
+ * Retrieves user and compared the hash password
+ * If valid, a token is sent and set on the browser as a response
+ */
 exports.authEmployee =
   ('/Authenticate',
   catchAsync(async (req, res, next) => {
@@ -45,6 +57,7 @@ exports.authEmployee =
     connection.query(
       q,
       catchAsync(async (err, user) => {
+        if (err) next(new AppError('Something went wrong, authentication failed', 500));
         if (!user?.length) next(new AppError('Authentication failed, invalid credentials', 401));
         if (user[0] && (await bcrypt.compare(req?.body?.password, user[0]?.pw))) createSendToken(user[0], 201, res);
         else next(new AppError('Authentication failed, invalid credentials', 401));
@@ -52,7 +65,9 @@ exports.authEmployee =
     );
   }));
 
-//Prevents access to requests without a valid token
+/**
+ * Prevents access to requests without a valid token
+ */
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
   const JWT = req.headers.authorization?.split(' ')[1];
@@ -64,7 +79,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   let user;
   connection.query(
     q,
-    [],
     catchAsync(async (err, userRes) => {
       if (!userRes?.length) next(new AppError('The user belonging to this token does not exist.', 401));
       user = userRes;
