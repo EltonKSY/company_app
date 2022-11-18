@@ -64,7 +64,7 @@ exports.addEmployee = catchAsync(async (req, res) => {
   const hashedPassword = await bcrypt.hash(PW, 10);
 
   //2) Terminate request if invalid data is found
-  if (GUIDUser && GUIDEmp && fname && lname && email && hashedPassword && typeof isActive === 'boolean' && skillsData?.length) {
+  if (GUIDUser && GUIDEmp && fname && lname && email && hashedPassword && skillsData?.length) {
     //Queries
     const qInsertUsers = 'INSERT INTO Users (uid, user_name, pw) VALUES ?';
     const qInsertEmps = 'INSERT INTO Employees (eid, uid, f_name, l_name, DOB, email, is_active) VALUES ?';

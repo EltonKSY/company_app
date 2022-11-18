@@ -16,6 +16,7 @@ export const useAuth = () => {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         user_name: username,
         password: password,
@@ -25,9 +26,8 @@ export const useAuth = () => {
     const res = await req.json();
     //2a) If PW or Username is invalid, display errmessage
     if (!req.ok) setError(res.message);
-    //2b) Set JWT in cookie for future request
+    //2b) Update user with new user
     else {
-      document.cookie = `comp_app_JWT=Bearer ${res.token}; expires=${new Date('December 17, 2025 03:24:00').toUTCString()}`;
       setError('');
       ctx.dispatch({ type: 'AUTH_READY', payload: res.result });
     }

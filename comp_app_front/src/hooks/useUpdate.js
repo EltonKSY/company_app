@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { getCookie } from '../helpers/validators';
 
 export const useUpdate = () => {
   const [error, setError] = useState(null);
@@ -7,14 +6,13 @@ export const useUpdate = () => {
 
   const updateUser = async updatedUser => {
     setIsPending(true);
-    const cookie = getCookie('comp_app_JWT');
     //1) Send request with new user info
-    const req = await fetch(`http://localhost:3001/Employees/${updateUser.UID}`, {
+    const req = await fetch(`http://localhost:3001/Employees/${updatedUser.UID}`, {
       method: 'PATCH',
+      credentials: 'include',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        Authorization: cookie,
       },
       body: JSON.stringify(updatedUser),
     });

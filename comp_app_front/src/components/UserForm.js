@@ -9,8 +9,8 @@ import styles from './Forms.module.css';
 import classes from './UserForm.module.css';
 
 function UserForm({ user, closeModal }) {
-  const { createUser, createError, isPendingCreate } = useCreate();
-  const { updateUser, updateError, isPendingUpdate } = useUpdate();
+  const { createUser, createError } = useCreate();
+  const { updateUser, updateError } = useUpdate();
   const [fname, setFName] = useState(user?.fname);
   const [lname, setLName] = useState(user?.lname);
   const [email, setEmail] = useState(user?.email);
@@ -42,10 +42,8 @@ function UserForm({ user, closeModal }) {
       skills,
     };
 
-    if (user) {
-      userFields.UID = user.UID;
-      userFields.EID = user.EID;
-    }
+    if (user) userFields.UID = user.UID;
+    else userFields.PW = PW;
 
     !user ? await createUser(userFields) : await updateUser(userFields);
     !updateError && !createError ? closeModal() : setErrMsg(updateError || createError);
@@ -55,10 +53,10 @@ function UserForm({ user, closeModal }) {
 
   //Preliminary check on inputs validation in order to enable submit button
   useEffect(() => {
-    console.log(DOB);
     if (fname && lname && (PW?.length > 4 || user) && validateEmail(email) && DOB && skills.length) setDisableButton(false);
     else setDisableButton(true);
-  }, [fname, lname, email, PW, DOB, isActive, skills]);
+  }, [fname, lname, email, PW, DOB, isActive, skills, user]);
+
   return (
     <div className={styles.container}>
       <form className={`${styles.form} ${classes.form_modal}`} onSubmit={submitHandler}>
