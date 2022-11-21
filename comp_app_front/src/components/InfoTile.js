@@ -10,11 +10,11 @@ import UserForm from './UserForm';
 
 import styles from './InfoTile.module.css';
 
-function DeleteUser({ fname, UID, closeModal }) {
+function DeleteUser({ fname, UID, onConfirm }) {
   const { deleteUser, deleted } = useDelete(UID);
 
   useEffect(() => {
-    deleted && closeModal();
+    deleted && onConfirm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deleted]);
 
@@ -28,7 +28,7 @@ function DeleteUser({ fname, UID, closeModal }) {
         <button aria-label="delete" className="btn_red" onClick={deleteUser}>
           Delete
         </button>
-        <button aria-label="delete" className="btn_blue" onClick={closeModal}>
+        <button aria-label="delete" className="btn_blue" onClick={onConfirm}>
           Cancel
         </button>
       </div>
@@ -36,11 +36,10 @@ function DeleteUser({ fname, UID, closeModal }) {
   );
 }
 
-function InfoTile({ user }) {
+function InfoTile({ user, setChanged }) {
   //0=> no display, 1=>display edit, 2=> display delete
   const [displayModal, setDisplayModal] = useState(0);
   const UID = user?.UID;
-  const EID = user?.EID;
   const fname = user?.f_name;
   const lname = user?.l_name;
   const dob = user?.DOB;
@@ -57,9 +56,34 @@ function InfoTile({ user }) {
   return (
     <>
       {displayModal === 1 && (
-        <Modal component={<UserForm user={{ fname, lname, dob, age, email, skillsLevels, UID, EID, isActive }} />} onConfirm={closeModal} />
+        <Modal
+          component={
+            <UserForm
+              user={{ fname, lname, dob, age, email, skillsLevels, UID, isActive }}
+              onConfirm={() => {
+                closeModal();
+                setChanged(changed => !changed);
+              }}
+            />
+          }
+          onConfirm={closeModal}
+        />
       )}
-      {displayModal === 2 && <Modal component={<DeleteUser fname={fname} UID={UID} EID={EID} />} onConfirm={closeModal} />}
+      {displayModal === 2 && (
+        <Modal
+          component={
+            <DeleteUser
+              fname={fname}
+              UID={UID}
+              onConfirm={() => {
+                closeModal();
+                setChanged(changed => !changed);
+              }}
+            />
+          }
+          onConfirm={() => closeModal}
+        />
+      )}
 
       <div className={styles.main_info}>
         <span className={styles.main_span}>

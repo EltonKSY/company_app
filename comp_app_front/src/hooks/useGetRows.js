@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export const useGetRows = path => {
+export const useGetRows = (path, trigger) => {
   const [rows, setRows] = useState([]);
   const [error, setError] = useState();
   const [isLoading, setIsLoading] = useState(true);
@@ -31,7 +31,7 @@ export const useGetRows = path => {
       setRows(allRows);
       setIsLoading(false);
     })();
-  }, [path]);
+  }, [path, trigger]);
 
-  return { rows, error, isLoading };
+  return { rows, error, isLoading, setRows };
 };

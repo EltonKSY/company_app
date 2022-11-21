@@ -8,7 +8,7 @@ import classes from './Modal.module.css';
 //onClick should normally be a function that unmounts Modal
 const BackDrop = props => <div className={classes.backdrop} onClick={props.onConfirm} />;
 
-const Overlay = props => <div className={classes.overlay}>{React.cloneElement(props.component, { closeModal: props.onConfirm })}</div>;
+const Overlay = props => <div className={classes.overlay}>{props.component}</div>;
 
 function Modal(props) {
   return (

@@ -8,7 +8,7 @@ import { useUpdate } from '../hooks/useUpdate';
 import styles from './Forms.module.css';
 import classes from './UserForm.module.css';
 
-function UserForm({ user, closeModal }) {
+function UserForm({ user, onConfirm }) {
   const { createUser, createError } = useCreate();
   const { updateUser, updateError } = useUpdate();
   const [fname, setFName] = useState(user?.fname);
@@ -46,7 +46,9 @@ function UserForm({ user, closeModal }) {
     else userFields.PW = PW;
 
     !user ? await createUser(userFields) : await updateUser(userFields);
-    !updateError && !createError ? closeModal() : setErrMsg(updateError || createError);
+    if (!updateError && !createError) {
+      onConfirm();
+    } else setErrMsg(updateError || createError);
 
     return;
   };
