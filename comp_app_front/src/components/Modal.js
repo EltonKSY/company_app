@@ -6,7 +6,7 @@ import classes from './Modal.module.css';
 
 //The dark overlay that covers the screen
 //onClick should normally be a function that unmounts Modal
-const BackDrop = props => <div className={classes.backdrop} onClick={props.onConfirm} />;
+const BackDrop = props => <div className={classes.backdrop} id="modal" onClick={props.onConfirm} />;
 
 const Overlay = props => <div className={classes.overlay}>{props.component}</div>;
 

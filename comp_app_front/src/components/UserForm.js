@@ -118,7 +118,7 @@ function UserForm({ user, onConfirm }) {
 
               {skills.map((skill, index) => (
                 <React.Fragment key={index}>
-                  <select disabled={skill?.name && skill?.level} id="skill" name="cars">
+                  <select disabled={skill?.name && skill?.level} data-testid="skill-disabled">
                     <option value=""></option>
                     <option selected={skill.name === 'Back-End Developer'} value="Back-End Developer">
                       Back-End Developer
@@ -136,7 +136,7 @@ function UserForm({ user, onConfirm }) {
                       Software Engineer
                     </option>
                   </select>
-                  <select disabled={skill?.name && skill?.level} id="skill" name="cars">
+                  <select disabled={skill?.name && skill?.level} data-testid="level-disabled">
                     <option value=""></option>
                     <option selected={skill.level === 'Lead'} value="Lead">
                       Lead
@@ -165,14 +165,7 @@ function UserForm({ user, onConfirm }) {
                   />
                 </React.Fragment>
               ))}
-              <select
-                id="skill"
-                name="skill"
-                value={newSkillName}
-                onChange={e => {
-                  setNewSkillName(e.target.value);
-                }}
-              >
+              <select value={newSkillName} onChange={e => setNewSkillName(e.target.value)} data-testid="skill-enabled">
                 <option value=""></option>
                 <option value="Back-End Developer">Back-End Developer</option>
                 <option value="Front-End Developer">Front-End Developer</option>
@@ -180,7 +173,7 @@ function UserForm({ user, onConfirm }) {
                 <option value="Product Owner">Product Owner</option>
                 <option value="Software Engineer">Software Engineer</option>
               </select>
-              <select id="level" name="level" value={newSkillLevel} onChange={e => setNewSkillLevel(e.target.value)}>
+              <select value={newSkillLevel} onChange={e => setNewSkillLevel(e.target.value)} data-testid="level-enabled">
                 <option value=""></option>
                 <option value="Lead">Lead</option>
                 <option value="I">I</option>
@@ -213,16 +206,16 @@ function UserForm({ user, onConfirm }) {
         <div className={classes.bottom}>
           <div className={classes.buttons}>
             {view === 1 && (
-              <button type="button" className={classes.button_prev} onClick={() => setView(0)}>
+              <button aria-label="previous" type="button" className={classes.button_prev} onClick={() => setView(0)}>
                 <FontAwesomeIcon icon={faChevronCircleLeft} />
               </button>
             )}
-            <button className={disableButton ? 'btn_inactive' : 'btn_blue'} type="submit" disabled={disableButton} onClick={submitHandler}>
+            <button aria-label="submit" className={disableButton ? 'btn_inactive' : 'btn_blue'} type="submit" disabled={disableButton} onClick={submitHandler}>
               Submit
             </button>
 
             {view === 0 && (
-              <button type="button" className={classes.button_next} onClick={() => setView(1)}>
+              <button aria-label="next" type="button" className={classes.button_next} onClick={() => setView(1)}>
                 <FontAwesomeIcon icon={faChevronCircleRight} />
               </button>
             )}

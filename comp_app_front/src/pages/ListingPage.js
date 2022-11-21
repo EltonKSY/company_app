@@ -37,51 +37,51 @@ function ListingPage() {
 
   return (
     <>
-      {!isLoading && !error && (
-        <>
-          {displayModal && (
-            <Modal
-              component={
-                <UserForm
-                  onConfirm={() => {
-                    setChanged(changed => !changed);
-                    setDisplayModal(false);
-                  }}
-                />
-              }
-              onConfirm={() => setDisplayModal(false)}
-            />
-          )}
-          <div className={styles.container}>
-            <header className={styles.header}>
-              <p>
-                Welcome back, <b>{`${ctx?.user?.f_name}`}</b>!
-              </p>
-              <button className="btn_red">Logout</button>
-            </header>
-            <div className={styles.buttons}>
-              <button className={`${styles.category} ${cat === 'ALL' && styles.category_current}`} onClick={() => setCat('ALL')}>
-                <span>{activeEmps?.length + inactiveEmps?.length || 0}</span>All Employees
-              </button>
-              <button className={`${styles.category} ${cat === 'ACTIVE' && styles.category_current}`} onClick={() => setCat('ACTIVE')}>
-                <span>{employees?.length ? activeEmps.length : 0}</span> Active Employees
-              </button>
-              <button className={`${styles.category} ${cat === 'INACTIVE' && styles.category_current}`} onClick={() => setCat('INACTIVE')}>
-                <span>{inactiveEmps?.length || 0}</span> Inactive Employees
-              </button>
-            </div>
-
-            <button aria-label="add" className={styles.icon} onClick={addUser}>
-              <FontAwesomeIcon icon={faPlus} />
+      <>
+        {displayModal && (
+          <Modal
+            component={
+              <UserForm
+                onConfirm={() => {
+                  setChanged(changed => !changed);
+                  setDisplayModal(false);
+                }}
+              />
+            }
+            onConfirm={() => setDisplayModal(false)}
+          />
+        )}
+        <div className={styles.container}>
+          <header className={styles.header}>
+            <p>
+              Welcome back, <b>{`${ctx?.user?.f_name}`}</b>!
+            </p>
+            <button className="btn_red">Logout</button>
+          </header>
+          <div className={styles.buttons}>
+            <button className={`${styles.category} ${cat === 'ALL' && styles.category_current}`} onClick={() => setCat('ALL')}>
+              <span>{activeEmps?.length + inactiveEmps?.length || 0}</span>All Employees
             </button>
+            <button className={`${styles.category} ${cat === 'ACTIVE' && styles.category_current}`} onClick={() => setCat('ACTIVE')}>
+              <span>{employees?.length ? activeEmps.length : 0}</span> Active Employees
+            </button>
+            <button className={`${styles.category} ${cat === 'INACTIVE' && styles.category_current}`} onClick={() => setCat('INACTIVE')}>
+              <span>{inactiveEmps?.length || 0}</span> Inactive Employees
+            </button>
+          </div>
+
+          <button aria-label="add" className={styles.icon} onClick={addUser}>
+            <FontAwesomeIcon icon={faPlus} />
+          </button>
+          {!isLoading && !error && (
             <div className={styles.table}>
               <InfoTile key="title-tile" />
               {cat !== 'INACTIVE' && activeEmps?.map(user => <InfoTile setChanged={setChanged} changed={changed} key={`${user.UID}-INACTIVE`} user={user} />)}
               {cat !== 'ACTIVE' && inactiveEmps?.map(user => <InfoTile setChanged={setChanged} changed={changed} key={`${user.UID}-ACTIVE`} user={user} />)}
             </div>
-          </div>
-        </>
-      )}
+          )}
+        </div>
+      </>
     </>
   );
 }
