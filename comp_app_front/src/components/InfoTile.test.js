@@ -8,15 +8,15 @@ import InfoTile from './InfoTile';
 
 // mock user Data
 const testUser = {
-  fname: 'User6',
-  id: 'User3',
-  lname: 'Lucien',
-  dob: '2020-12-31',
-  email: 'user1@gmail.com',
-  skill: ['Front-End Developer'],
-  password: 'Password',
-  UID: 66,
-  isActive: true,
+  DOB: '1975-12-12T05:00:00.000Z',
+  EID: 'ed560a98-1a37-462c-aeee-cea5c914ty52',
+  UID: 'd1007d9a-2294-4e64-ace5-e1107e644937',
+  email: 'niko@email.com',
+  f_name: 'Niko',
+  is_active: 1,
+  l_name: 'Bellic',
+  levels: '["II","III"]',
+  skills: '["Product Manager","Product Owner"]',
 };
 
 //Callbacks for test cases
@@ -48,7 +48,7 @@ describe('Table and form mounting and unmounting', () => {
     test('When user clicks on delete employee button, form displays', () => mountedCheck('delete', 'Are you sure you would like to permanently delete'));
   });
 
-  describe('Edit and Delete components unmount', () => {
+  describe('Edit and Delete components unmount on modal click', () => {
     test('When user clicks on modal, edit prompt unmounts', () => unmountedCheck('edit'));
     test('When user clicks on modal, delete prompt unmounts', () => unmountedCheck('delete'));
   });

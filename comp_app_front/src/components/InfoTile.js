@@ -28,7 +28,7 @@ function DeleteUser({ fname, UID, onConfirm }) {
         <button aria-label="delete" className="btn_red" onClick={deleteUser}>
           Delete
         </button>
-        <button aria-label="delete" className="btn_blue" onClick={onConfirm}>
+        <button aria-label="cancel" className="btn_blue" onClick={onConfirm}>
           Cancel
         </button>
       </div>
@@ -59,7 +59,7 @@ function InfoTile({ user, setChanged }) {
         <Modal
           component={
             <UserForm
-              user={{ fname, lname, dob, age, email, skillsLevels, UID, isActive }}
+              user={{ fname, lname, dob, email, skillsLevels, UID, isActive }}
               onConfirm={() => {
                 closeModal();
                 setChanged(changed => !changed);
@@ -81,7 +81,7 @@ function InfoTile({ user, setChanged }) {
               }}
             />
           }
-          onConfirm={() => closeModal}
+          onConfirm={() => closeModal()}
         />
       )}
 

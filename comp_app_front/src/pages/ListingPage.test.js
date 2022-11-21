@@ -9,7 +9,7 @@ describe('Table and form display', () => {
   beforeEach(() => render(<ListingPage />));
 
   test('If table head renders', () => {
-    const nameElement = screen.getByText(/full name/i);
+    const nameElement = screen.getByText(/welcome/i);
     expect(nameElement).toBeInTheDocument();
   });
 
