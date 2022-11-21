@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import AuthPage from './pages/AuthPage';
 import ListingPage from './pages/ListingPage';
@@ -15,9 +15,9 @@ function App() {
       {ctx.authIsReady && (
         <BrowserRouter>
           <Routes>
-            <Route path="/auth" element={ctx.user ? <ListingPage /> : <AuthPage />} />
-            <Route path="/listing" element={ctx.user ? <ListingPage /> : <AuthPage />} />
-            <Route path="*" element={<AuthPage />} />
+            <Route path="/auth" element={ctx.user ? <Navigate to="/listing" /> : <AuthPage />} />
+            <Route path="/listing" element={ctx.user ? <ListingPage /> : <Navigate to="/auth" />} />
+            <Route path="*" element={<Navigate to="/auth" />} />
           </Routes>
         </BrowserRouter>
       )}
