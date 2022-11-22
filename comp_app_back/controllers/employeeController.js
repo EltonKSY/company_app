@@ -1,10 +1,34 @@
 const { faker } = require('@faker-js/faker');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
+const redis = require('redis');
 
 const { queryPromise, checkCurrUser, getEmpInfo } = require('../helpers/utilityFunctions');
 
 const catchAsync = require('../helpers/catchAsync');
+
+const client = redis.createClient();
+
+exports.updateCache = catchAsync(async (req, res, next) => {
+  //Concat Used to turn each employee skill into a json array
+  const q = `
+  SELECT
+    f_name, l_name, email, DOB, is_active, Employees.uid AS UID, 
+    EmployeesSkills.eid AS EID,
+    CONCAT("[",GROUP_CONCAT(CONCAT("""", skill_name, """" )), "]") AS skills, 
+    CONCAT("[",GROUP_CONCAT(CONCAT("""", lvl, """" )), "]") AS levels
+    FROM Employees
+      JOIN EmployeesSkills ON Employees.eid = EmployeesSkills.eid
+          JOIN Skills ON Skills.sid = EmployeesSkills.sid
+    GROUP BY Employees.eid 
+    ORDER BY l_name;`;
+
+  const result = await queryPromise(q);
+
+  await client.connect();
+  await client.setEx('employees', 7 * 24 * 3600, JSON.stringify(result));
+  await client.disconnect();
+});
 
 //Get all employees
 exports.getEmployees = catchAsync(async (req, res, next) => {
@@ -23,10 +47,14 @@ exports.getEmployees = catchAsync(async (req, res, next) => {
 
   const result = await queryPromise(q);
 
-  return res.status(200).json({
+  res.status(200).json({
     status: 'success',
     result,
   });
+
+  await client.connect();
+  await client.setEx('employees', 7 * 24 * 3600, JSON.stringify(result));
+  await client.disconnect();
 });
 
 //Get  employee if JWT is valid and id is valid
@@ -49,13 +77,14 @@ exports.getEmployee = catchAsync(async (req, res, next) => {
 
   const result = await queryPromise(q);
 
-  return res.status(200).json({
+  res.status(200).json({
     status: 'success',
     result: result[0] || null,
   });
+  next();
 });
 
-exports.addEmployee = catchAsync(async (req, res) => {
+exports.addEmployee = catchAsync(async (req, res, next) => {
   // 1) Normalize and hash incoming Emp data
   const GUIDUser = crypto.randomUUID();
   const GUIDEmp = crypto.randomUUID();
@@ -78,15 +107,16 @@ exports.addEmployee = catchAsync(async (req, res) => {
     await queryPromise(qInsertSkills, skillsData);
     await queryPromise(qInsertEmSkills, employeeSkillsData);
 
-    return res.status(200).json({
+    res.status(200).json({
       status: 'success',
       result: { UID: GUIDUser, userName },
     });
-  }
-  return res.status(404).json({
-    status: 'fail',
-    message: 'Invalid request, incorrect fields',
-  });
+  } else
+    res.status(404).json({
+      status: 'fail',
+      message: 'Invalid request, incorrect fields',
+    });
+  next();
 });
 
 exports.updateEmployee = catchAsync(async (req, res, next) => {
@@ -142,7 +172,9 @@ exports.deleteEmployee = catchAsync(async (req, res, next) => {
   queryPromise(qEmp);
   queryPromise(qEmpSkills);
 
-  return res.status(200).json({
+  res.status(200).json({
     status: 'success',
   });
+
+  next();
 });
