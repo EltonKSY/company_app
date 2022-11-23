@@ -91,3 +91,11 @@ exports.protect = catchAsync(async (req, res, next) => {
     }),
   );
 });
+
+/**
+ * Logs out Users by removing the cookie on the browser
+ */
+exports.logout = (req, res, next) => {
+  res.clearCookie('comp_app_JWT');
+  res.end();
+};
