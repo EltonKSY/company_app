@@ -25,9 +25,13 @@ exports.updateCache = catchAsync(async (req, res, next) => {
 
   const result = await queryPromise(q);
 
-  await client.connect();
-  await client.setEx('employees', 7 * 24 * 3600, JSON.stringify(result));
-  await client.disconnect();
+  try {
+    await client.connect();
+    await client.setEx('employees', 7 * 24 * 3600, JSON.stringify(result));
+    await client.disconnect();
+  } catch (error) {
+    console.log('Connection to cache could not be established');
+  }
 });
 
 //Get all employees
@@ -51,10 +55,13 @@ exports.getEmployees = catchAsync(async (req, res, next) => {
     status: 'success',
     result,
   });
-
-  await client.connect();
-  await client.setEx('employees', 7 * 24 * 3600, JSON.stringify(result));
-  await client.disconnect();
+  try {
+    await client.connect();
+    await client.setEx('employees', 7 * 24 * 3600, JSON.stringify(result));
+    await client.disconnect();
+  } catch (error) {
+    console.log('Connection to cache could not be established');
+  }
 });
 
 //Get  employee if JWT is valid and id is valid

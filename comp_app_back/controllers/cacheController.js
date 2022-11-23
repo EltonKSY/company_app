@@ -13,6 +13,7 @@ exports.cache = async (req, res, next) => {
     }
     next();
   } catch (error) {
+    req.cacheUnaivailable = true;
     next();
   }
 };
