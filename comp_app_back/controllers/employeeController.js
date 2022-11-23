@@ -81,7 +81,7 @@ exports.getEmployee = catchAsync(async (req, res, next) => {
     status: 'success',
     result: result[0] || null,
   });
-  next();
+  if (req.method !== 'GET') next();
 });
 
 exports.addEmployee = catchAsync(async (req, res, next) => {
@@ -168,9 +168,9 @@ exports.deleteEmployee = catchAsync(async (req, res, next) => {
   });
 
   //3) Delete from Users, Employees and EmployeeSkills table
-  queryPromise(qUser);
-  queryPromise(qEmp);
-  queryPromise(qEmpSkills);
+  await queryPromise(qUser);
+  await queryPromise(qEmp);
+  await queryPromise(qEmpSkills);
 
   res.status(200).json({
     status: 'success',

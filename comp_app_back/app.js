@@ -8,6 +8,7 @@ const employeesRouter = require('./routes/employeesRoutes');
 const authRouter = require('./routes/authRoutes');
 const AppError = require('./helpers/AppErrors');
 const errorHandler = require('./controllers/errorController');
+const { logout } = require('./controllers/authController');
 
 const app = express();
 dotenv.config({ path: `${__dirname}/.env` });
@@ -31,6 +32,7 @@ app.use(express.json());
 // 3) ROUTES
 app.use('/Employees', employeesRouter);
 app.use('/Authenticate', authRouter);
+app.post('/Logout', logout);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

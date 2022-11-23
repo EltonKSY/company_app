@@ -30,11 +30,12 @@ function ListingPage() {
     setInactiveEmps(inactive);
   }, [employees, changed]);
 
-  const addUser = function () {
-    setDisplayModal(true);
-    return;
-  };
+  const addUser = () => setDisplayModal(true);
 
+  const logout = async () => {
+    await fetch('http://localhost:3001/Logout', { method: 'POST', credentials: 'include' });
+    ctx.dispatch({ type: 'LOGOUT' });
+  };
   return (
     <>
       <>
@@ -56,7 +57,9 @@ function ListingPage() {
             <p>
               Welcome back, <b>{`${ctx?.user?.f_name}`}</b>!
             </p>
-            <button className="btn_red">Logout</button>
+            <button className="btn_red" onClick={logout}>
+              Logout
+            </button>
           </header>
           <div className={styles.buttons}>
             <button className={`${styles.category} ${cat === 'ALL' && styles.category_current}`} onClick={() => setCat('ALL')}>
